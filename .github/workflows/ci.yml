@@ -26,3 +26,5 @@ jobs:
         run: python tools/check.py
       - name: Verify release source archive
         run: python tools/build_source.py --output dist
+      - name: Validate generated Compose files without starting services
+        run: python tools/check_compose.py

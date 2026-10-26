@@ -31,6 +31,8 @@ installation; project release numbers do not claim an Amnezia protocol upgrade.
 - Release list: https://github.com/AstolfoSan/AmneziaDashboard/releases
 - Latest stable release: https://github.com/AstolfoSan/AmneziaDashboard/releases/latest
 - Source installer ZIP: https://github.com/AstolfoSan/AmneziaDashboard/releases/latest/download/AmneziaDashboard.zip
+- Windows x64 EXE: https://github.com/AstolfoSan/AmneziaDashboard/releases/latest/download/AmneziaDashboardSetup.exe
+- Windows licenses: https://github.com/AstolfoSan/AmneziaDashboard/releases/latest/download/Windows-licenses.zip
 - Checksums: https://github.com/AstolfoSan/AmneziaDashboard/releases/latest/download/SHA256SUMS
 
 Latest links only resolve when a non-draft stable release exists. They follow
@@ -47,6 +49,27 @@ Checksums should always be downloaded from the **same release** as the archive.
 4. Verify real client traffic and non-regressing lifetime counters before/after.
 5. Roll back application code separately from newer DB state whenever possible.
 
-There is no universal live updater in 1.0.0. Do not replace this process with a
+There is no universal live updater in 1.1.0. Do not replace this process with a
 second run of the fresh-VPS wizard. / Повторный запуск мастера не является
 обновлением действующей установки.
+
+## Windows build and UI captures
+
+The Windows CI workflow produces a one-file GUI with Python/Tk/SSH dependencies,
+an offline frozen self-test, collected licenses and checksums. Release builds
+come from GitHub-hosted Windows runners, not a maintainer's personal machine.
+The EXE is unsigned; do not tell users to disable endpoint protection.
+
+For a local Windows build in an isolated environment: install
+installer/requirements-build.txt plus installer/requirements.txt, run
+tools/build_source.py first, then tools/build_windows.py. Do not publish local
+builds containing personal source paths. Review transitive package metadata
+and the collected notices before publishing a new runtime build.
+
+Use only `--demo` for screenshots; installation and downloads are disabled.
+Capture both languages, direct/cascade forms and both dashboard languages.
+Review actual pixels, normalize metadata, update docs/images/REVIEWED.json and
+rerun the privacy gate. Do not weaken the gate to allow arbitrary images.
+
+`python tools/preview_ui.py` serves the real web assets against read-only
+synthetic data on loopback. It does not connect to a VPN or issue profiles.

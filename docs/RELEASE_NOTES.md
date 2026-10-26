@@ -1,26 +1,27 @@
-# AmneziaDashboard 1.0.0 / Первый публичный исходный релиз
+# AmneziaDashboard 1.1.0 — Русский / English · Windows Setup
 
-Independent self-hosted AmneziaWG dashboard with personal `.vpn` exports,
-administrator/group/device hierarchy, lifetime traffic, charts, access pause,
-expiry and traffic quotas. Includes the current dashboard UI and an interactive
-fresh-VPS direct/cascade installer, plus Russian and English installation guides.
-The interface and terminal wizard are currently Russian-only.
+## New / Что нового
 
-Панель выдачи `.vpn`, администраторы и группы, статистика, пауза, сроки и лимиты.
-Включены свежий интерфейс, инструкция со скриншотами и мастер прямой/каскадной
-установки. Документация — RU/EN; интерфейс — пока русский.
+- Russian and English throughout the dashboard, invitation guide, system errors and terminal wizard. Language selection never rewrites user names or VPN payloads.
+- Self-contained Windows x64 GUI: Python, Tk and SSH/crypto libraries included. Direct and two-server cascade installation, with verified backups and explicit SSH fingerprint/plan approval.
+- Optional official AmneziaVPN Windows client download with mandatory SHA-256 verification before opening its normal installer.
+- Detailed RU/EN guides with actual application screenshots using synthetic DEMO data only.
+
+Русский и английский интерфейс, готовый Windows EXE без ручной установки Python, две схемы установки, проверка загрузки клиента AmneziaVPN и подробные инструкции со скриншотами.
 
 ## Downloads / Скачать
 
-- **AmneziaDashboard.zip** — complete source installer package; requires Python 3.12+.
-- **SHA256SUMS** — verify the archive before extracting/running it.
+- **AmneziaDashboardSetup.exe** — Windows 10/11 x64, embedded dependencies; unsigned.
+- **AmneziaDashboard.zip** — full source package; Python 3.12+ for source/terminal mode.
+- **Windows-licenses.zip** — bundled dependency/runtime notices.
+- **SHA256SUMS** — checksums for the three files above. Use files from this same release.
 
-Read `docs/INSTALL_RU.md` or `docs/INSTALL_EN.md` in the package. No credentials,
-production databases, private profiles or server backups are included.
+[Русская инструкция](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.1.0/docs/INSTALL_RU.md) · [English guide](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.1.0/docs/INSTALL_EN.md)
 
-> **Fresh-VPS acceptance is still pending.** This release number does not turn
-> mock/local regression tests into a clean-Linux deployment test. Use separate
-> test VPSs first; never run the fresh installer over an existing production VPN.
-> Existing deployments require a reviewed backup and migration plan, not a rerun.
+> **Fresh-VPS acceptance remains pending.** Windows build/offline tests and UI screenshots do not prove a full clean Linux installation. Use separately authorized test VPSs first. Do not rerun the fresh installer over a working VPN.
+>
+> Полный прогон на чистых VPS и реальных iOS/Android пока не выполнен. На действующих серверах эта публикация ничего не меняет.
 
-Original code is MIT licensed; third-party licenses/rights remain unchanged.
+No VPN keys, issued profiles, subscriptions, database schema or lifetime totals are replaced by localization. There is no automatic in-place updater; existing installations need a verified backup and reviewed code/image migration plan.
+
+No production IPs, credentials, private databases, issued profiles or invitations are included. Original code: MIT; third-party rights remain applicable.

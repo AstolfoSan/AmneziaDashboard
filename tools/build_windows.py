@@ -17,6 +17,9 @@ def build():
     output=ROOT/'dist';work=ROOT/'build/windows';output.mkdir(exist_ok=True);work.mkdir(parents=True,exist_ok=True)
     target=output/'AmneziaDashboardSetup.exe'
     if target.exists():raise SystemExit('Refusing to overwrite an existing EXE')
+    version=(ROOT/'VERSION').read_text().strip();numbers=tuple(int(v) for v in version.split('.'))+(0,)
+    resource=work/'version.txt'
+    resource.write_text("VSVersionInfo(ffi=FixedFileInfo(filevers="+repr(numbers)+",prodvers="+repr(numbers)+",mask=0x3f,flags=0,OS=0x40004,fileType=1,subtype=0,date=(0,0)),kids=[StringFileInfo([StringTable('040904B0',[StringStruct('CompanyName','AmneziaDashboard contributors'),StringStruct('FileDescription','AmneziaDashboard Setup'),StringStruct('FileVersion','"+version+"'),StringStruct('ProductName','AmneziaDashboard'),StringStruct('ProductVersion','"+version+"'),StringStruct('OriginalFilename','AmneziaDashboardSetup.exe')])]),VarFileInfo([VarStruct('Translation',[1033,1200])])])",encoding='utf-8')
     licenses=work/'licenses';licenses.mkdir(exist_ok=True)
     packages={}
     for dist in importlib.metadata.distributions():
@@ -32,7 +35,7 @@ def build():
         (licenses/name).write_bytes(source.read_bytes())
     (licenses/'AmneziaDashboard-LICENSE.txt').write_bytes((ROOT/'LICENSE').read_bytes())
     (licenses/'BUILD.json').write_text(json.dumps({'python':platform.python_version(),'platform':'Windows x64','packages':packages},indent=2),encoding='utf-8')
-    args=[sys.executable,'-m','PyInstaller','--onefile','--windowed','--noupx','--icon','NONE',
+    args=[sys.executable,'-m','PyInstaller','--onefile','--windowed','--noupx','--icon','NONE','--version-file',str(resource),
           '--name','AmneziaDashboardSetup','--distpath',str(output),'--workpath',str(work/'pyinstaller'),'--specpath',str(work),
           '--paths',str(ROOT/'installer'),'--collect-all','paramiko','--collect-all','cryptography','--collect-all','bcrypt','--collect-all','nacl']
     for source,dest in [('installer/portable','portable'),('installer/messages_en.json','.'),('installer/node_install.py','.'),

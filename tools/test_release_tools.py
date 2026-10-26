@@ -2,7 +2,7 @@ import tempfile
 from pathlib import Path
 import unittest
 import zipfile
-from privacy_check import inspect,scan
+from privacy_check import inspect,scan,ROOT
 
 
 class PrivacyTests(unittest.TestCase):
@@ -21,6 +21,12 @@ class PrivacyTests(unittest.TestCase):
 
     def test_unreviewed_png_is_rejected(self):
         self.assertIn('unreviewed image',inspect('screenshot.png',b'not-a-reviewed-image'))
+
+    def test_reviewed_synthetic_image_is_path_and_hash_bound(self):
+        path='docs/images/dashboard-en.png';payload=(ROOT/path).read_bytes()
+        self.assertEqual(inspect(path,payload),[])
+        self.assertIn('unreviewed image',inspect('other/dashboard-en.png',payload))
+        self.assertIn('unreviewed image',inspect(path,payload+b'changed'))
 
     def test_zip_members_are_scanned_not_just_the_container_name(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -19,6 +19,11 @@ owners. The dashboard monogram is original project artwork.
   individual licenses. Optional frozen Windows builds must carry dependency
   license texts collected from the build environment.
 - Docker base images, Python and nginx retain their upstream licenses.
+- Windows EXE includes Python, Tcl/Tk, Paramiko and crypto dependencies. The
+  release carries Windows-licenses.zip and embeds the same collected notices.
+  Reviewed Tcl/Tk terms are retained in docs/licenses from the official
+  tcltk/tcl and tcltk/tk core-8-6-13 license.terms; runtime distributions may
+  omit those text files while retaining the applicable Tcl/Tk license.
 
 No production configuration, private certificate, customer/device database,
 issued profile or user-specific invitation is part of this source release.

@@ -4,7 +4,7 @@
   <p>A clear home for your self-hosted VPN.</p>
   <p><strong>Profiles · People · Traffic · Access</strong></p>
   <p><a href="README_RU.md">Русский</a> · English · <a href="docs/INSTALL_EN.md">Installation</a> · <a href="https://github.com/AstolfoSan/AmneziaDashboard/releases">Downloads</a></p>
-  <img alt="Version 1.0.0" src="https://img.shields.io/badge/version-1.0.0-F6A453">
+  <img alt="Version 1.1.0" src="https://img.shields.io/badge/version-1.1.0-F6A453">
   <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-9B8BC1">
   <img alt="Self hosted" src="https://img.shields.io/badge/self--hosted-AmneziaWG-7EBAD2">
 </div>
@@ -17,7 +17,7 @@ devices by administrator and group, and understand usage without editing configs
 by hand. It is not an official Amnezia product or a VPN subscription service.
 
 > [!IMPORTANT]
-> **1.0.0 identifies this source/package release, not completed fresh-VPS acceptance.**
+> **1.1.0 identifies this source/package release, not completed fresh-VPS acceptance.**
 > The dashboard has automated regression tests. The new direct/cascade installer
 > still needs end-to-end acceptance on clean Ubuntu VPSs and real client devices.
 > Do not run it over an existing production VPN. See [validation](VALIDATION.json).
@@ -34,9 +34,10 @@ by hand. It is not an official Amnezia product or a VPN subscription service.
 - A step-by-step terminal installer: **direct** or **two-server cascade**.
 - A restricted SSH worker; the web app does not receive a Docker socket.
 
-The web interface and interactive wizard are currently **Russian-only**.
-English and Russian installation documentation are included. Interface
-localization is not part of 1.0.0.
+The web dashboard, Windows setup and terminal wizard support **Russian and English**.
+Switch languages in the interface or use `--lang en` / `--lang ru` in the terminal.
+
+![English dashboard with synthetic data](docs/images/dashboard-en.png)
 
 ## Choose your route
 
@@ -54,12 +55,13 @@ multi-exit selection, and it does not import an existing fleet of servers.
 Use a **fresh Ubuntu 24.04 VPS** (two for cascade), public IPv4, root SSH access,
 `/dev/net/tun`, at least 1 GB RAM and 3 GB free disk per host. The currently
 supported upstream image architecture must be available; start with amd64.
-Use Python 3.12+ on the computer running the wizard.
+Windows 10/11 x64: download the self-contained EXE; no Python installation is needed.
+Linux/macOS or source mode: use Python 3.12+ on the operator computer.
 
-1. Download **AmneziaDashboard.zip** from [Releases](https://github.com/AstolfoSan/AmneziaDashboard/releases).
-2. Verify it against the release's **SHA256SUMS**, then extract the whole archive.
-3. Follow the OS-specific commands in [English](docs/INSTALL_EN.md) or [Русский](docs/INSTALL_RU.md).
-4. Run `python installer/cli.py` inside the extracted directory.
+1. Download [**AmneziaDashboardSetup.exe**](https://github.com/AstolfoSan/AmneziaDashboard/releases/latest/download/AmneziaDashboardSetup.exe) for Windows, or the source ZIP from Releases.
+2. Verify its SHA-256 using **SHA256SUMS from the same release**.
+3. Follow the illustrated steps in [English](docs/INSTALL_EN.md) or [Русский](docs/INSTALL_RU.md).
+4. Open the EXE, choose a language and direct/cascade mode, then enter the new VPS details. Source alternative: `python installer/cli.py --lang en`.
 5. Verify SSH fingerprints, approve the exact plan and keep the private recovery
    directory on your own computer. Never upload it to GitHub.
 

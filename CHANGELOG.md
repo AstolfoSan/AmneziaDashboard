@@ -6,9 +6,25 @@ All user-visible changes are recorded here. Versions follow Semantic Versioning.
 
 ### Planned / Запланировано
 
-- English interface localization (not included in 1.0.0).
 - Clean-VPS direct/cascade acceptance and real-device validation.
 - Reviewed in-place upgrade/migration tooling; the installer remains fresh-only.
+
+## [1.1.0] — 2026-10-26
+
+### Added / Добавлено
+
+- Russian/English web UI, public invitation guide, system errors and terminal wizard.
+- Persistent browser language preference; user names, profile payloads and stored state are not translated.
+- Self-contained Windows x64 GUI EXE with embedded Python, Tk and SSH/crypto dependencies.
+- Direct/cascade setup forms, explicit host/plan approval and an optional official Windows client download with required SHA-256 verification.
+- Detailed RU/EN installation and recovery guides with real synthetic-data screenshots in each language.
+- Windows CI build, frozen offline self-test, dependency notices and release checksums for all assets.
+
+### Compatibility / Совместимость
+
+- No VPN keys, routes, protocol settings, issued profiles, database schema or lifetime-counter reset is introduced by localization.
+- No automatic in-place updater; the provisioning wizard remains fresh-only.
+- Full clean-VPS/direct/cascade and real-device acceptance remain pending.
 
 ## [1.0.0] — 2026-10-26
 

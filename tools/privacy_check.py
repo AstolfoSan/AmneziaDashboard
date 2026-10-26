@@ -20,6 +20,7 @@ TEST_ADDRESSES={'224.0.0.1'} # Deliberately rejected multicast input in validati
 TEST_VERSIONS={'5.0.3.0','5.0.3.1','6.0.0.0'}
 PNG_HASHES={'amnezia-add-key.png':'b832bb8bda0b9be8604424e1702991378804ff85b7dd9435a52f616f7f1c063a',
             'amnezia-paste-key.png':'67742294337769a419f2b70ee49657b7613a170199c66d91a41c59366ab807da'}
+DOC_PNG_HASHES=json.loads((ROOT/'docs/images/REVIEWED.json').read_text(encoding='utf-8'))
 PATTERNS=[re.compile(rb'-----BEGIN (?:OPENSSH |RSA |EC |ENCRYPTED )?PRIVATE KEY-----'),
           re.compile(rb'gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}'),
           re.compile(rb'vpn://[A-Za-z0-9_-]{80,}'),
@@ -34,7 +35,15 @@ def inspect(name,payload):
     if any(part in PRIVATE_DIRS for part in path.parts) or path.name in PRIVATE_NAMES or path.name.startswith('.env.') or path.suffix.lower() in PRIVATE_SUFFIXES:
         issues.append('private/runtime file')
     if path.suffix=='.png':
-        if path.name not in PNG_HASHES or hashlib.sha256(payload).hexdigest()!=PNG_HASHES[path.name]:issues.append('unreviewed image')
+        canonical=name.removeprefix('AmneziaDashboard/')
+        expected=DOC_PNG_HASHES.get(canonical) or (PNG_HASHES.get(path.name) if canonical.startswith('installer/portable/app/static/') else None)
+        if not expected or hashlib.sha256(payload).hexdigest()!=expected:issues.append('unreviewed image')
+        offset=8
+        if payload[:8]!=b'\x89PNG\r\n\x1a\n':issues.append('invalid PNG')
+        while offset+12<=len(payload):
+            length=int.from_bytes(payload[offset:offset+4],'big');kind=payload[offset+4:offset+8]
+            if kind in {b'tEXt',b'iTXt',b'zTXt',b'eXIf'}:issues.append('image metadata')
+            offset+=length+12
     elif path.suffix not in TEXT_SUFFIXES and path.name not in PLAIN_NAMES:issues.append('unexpected file type')
     else:
         try:text=payload.decode('utf-8')
