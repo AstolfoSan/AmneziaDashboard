@@ -3,6 +3,7 @@ var tr=value=>globalThis.DashboardI18n?globalThis.DashboardI18n.text(value):valu
 
 const $=s=>document.querySelector(s), token=location.pathname.startsWith('/j/')?location.pathname.slice(3):'';
 let device,profileRequest=null,preparedImport=null;
+globalThis.DeviceDownloads?.mount(document,navigator);
 fetch('/api/downloads').then(async r=>{if(!r.ok)return;const release=await r.json();$('#release-version').textContent=tr('Последняя стабильная версия: ')+release.version+' · GitHub';for(const [platform,asset] of Object.entries(release.platforms)){const hint=document.querySelector('[data-download-hint="'+platform+'"]');if(hint)hint.textContent=tr(asset.hint)}}).catch(()=>{});
 function error(s){$('#join-error').textContent=s}
 function ready(){$('#request-view').classList.add('hidden');$('#ready-view').classList.remove('hidden');$('#issued-expiry').textContent=device&&Object.hasOwn(device,'expires_at')?(device.expires_at==null?tr('При выдаче: без ограничения срока.'):tr('При выдаче доступ до ')+ClientAccess.format(device.expires_at)):'';error('');prepareImport()}

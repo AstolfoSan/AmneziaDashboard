@@ -1,27 +1,25 @@
-# AmneziaDashboard 1.1.0 — Русский / English · Windows Setup
+# AmneziaDashboard 1.1.1 — Download for your device / Загрузка для вашего устройства
 
-## New / Что нового
+Invitation pages now detect the device OS and show only relevant downloads by default:
 
-- Russian and English throughout the dashboard, invitation guide, system errors and terminal wizard. Language selection never rewrites user names or VPN payloads.
-- Self-contained Windows x64 GUI: Python, Tk and SSH/crypto libraries included. Direct and two-server cascade installation, with verified backups and explicit SSH fingerprint/plan approval.
-- Optional official AmneziaVPN Windows client download with mandatory SHA-256 verification before opening its normal installer.
-- Detailed RU/EN guides with actual application screenshots using synthetic DEMO data only.
+- Android: APK and Google Play.
+- iPhone/iPad: App Store, including iPadOS using a desktop-style browser.
+- Windows, macOS and Linux: the matching official app download.
+- Another device reveals other platforms; unknown OS retains manual choices.
 
-Русский и английский интерфейс, готовый Windows EXE без ручной установки Python, две схемы установки, проверка загрузки клиента AmneziaVPN и подробные инструкции со скриншотами.
+На пригласительной странице теперь показывается загрузка для ОС текущего устройства. Остальные варианты спрятаны под «Другое устройство». Определение выполняется локально, без стороннего сервиса; ничего не скачивается и профиль не создаётся автоматически.
+
+Latest stable upstream resolution, manual import, issued configs, subscriptions, keys, database and lifetime counters are unchanged. Russian and English are supported; invitation screenshots are updated.
 
 ## Downloads / Скачать
 
-- **AmneziaDashboardSetup.exe** — Windows 10/11 x64, embedded dependencies; unsigned.
-- **AmneziaDashboard.zip** — full source package; Python 3.12+ for source/terminal mode.
+- **AmneziaDashboardSetup.exe** — self-contained Windows 10/11 x64 setup, unsigned.
+- **AmneziaDashboard.zip** — complete source package.
 - **Windows-licenses.zip** — bundled dependency/runtime notices.
-- **SHA256SUMS** — checksums for the three files above. Use files from this same release.
+- **SHA256SUMS** — verify files from this same release.
 
-[Русская инструкция](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.1.0/docs/INSTALL_RU.md) · [English guide](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.1.0/docs/INSTALL_EN.md)
+[Русская инструкция](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.1.1/docs/INSTALL_RU.md) · [English guide](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.1.1/docs/INSTALL_EN.md)
 
-> **Fresh-VPS acceptance remains pending.** Windows build/offline tests and UI screenshots do not prove a full clean Linux installation. Use separately authorized test VPSs first. Do not rerun the fresh installer over a working VPN.
->
-> Полный прогон на чистых VPS и реальных iOS/Android пока не выполнен. На действующих серверах эта публикация ничего не меняет.
+327 automated tests and five engine-free Compose variants are checked. Browser QA uses synthetic data; physical phone acceptance and full clean-VPS provisioning remain pending. Do not rerun the fresh installer over a working VPN. There is no automatic in-place updater.
 
-No VPN keys, issued profiles, subscriptions, database schema or lifetime totals are replaced by localization. There is no automatic in-place updater; existing installations need a verified backup and reviewed code/image migration plan.
-
-No production IPs, credentials, private databases, issued profiles or invitations are included. Original code: MIT; third-party rights remain applicable.
+This publication does not change live servers. No production addresses, credentials, databases, issued profiles or invitations are included. Original code: MIT; third-party rights remain applicable.

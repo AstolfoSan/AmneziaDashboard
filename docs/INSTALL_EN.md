@@ -1,4 +1,4 @@
-# Installing AmneziaDashboard 1.1.0
+# Installing AmneziaDashboard 1.1.1
 
 [Русский](INSTALL_RU.md) · [Home](../README.md) · [Releases](https://github.com/AstolfoSan/AmneziaDashboard/releases)
 
@@ -136,7 +136,7 @@ For unlimited duration: **Expiry → ∞ No expiry → Save expiry**. Remove man
 ![Connection guide in English](images/join-en.png)
 
 1. Open your group invitation.
-2. Choose Android APK / Google Play, iPhone/iPad App Store, Windows, macOS or Linux. Direct downloads resolve the latest stable official AmneziaVPN release.
+2. The first step detects your OS and shows only matching downloads: Android APK / Google Play, iPhone/iPad App Store, Windows, macOS or Linux. Open **Another device** if detection is wrong or you need a different device. Unknown systems retain all manual choices. Direct downloads still resolve the latest stable official AmneziaVPN release.
 3. Install the application.
 4. Return to the invitation, name the device and click **Get connection**.
 5. Click **Add to AmneziaVPN**, then confirm import in the app. iOS may show Share: choose AmneziaVPN.

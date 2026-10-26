@@ -1,4 +1,4 @@
-# Установка AmneziaDashboard 1.1.0
+# Установка AmneziaDashboard 1.1.1
 
 [English](INSTALL_EN.md) · [Главная](../README_RU.md) · [Все версии](https://github.com/AstolfoSan/AmneziaDashboard/releases)
 
@@ -136,7 +136,7 @@ Get-FileHash .\AmneziaDashboardSetup.exe -Algorithm SHA256
 ![Страница подключения на русском](images/join-ru.png)
 
 1. Откройте приглашение группы.
-2. В первом шаге выберите Android APK / Google Play, iPhone/iPad App Store, Windows, macOS или Linux. Прямые файлы выбираются из актуального стабильного релиза AmneziaVPN.
+2. Первый шаг определяет ОС и показывает только подходящие загрузки: Android APK / Google Play, App Store для iPhone/iPad, Windows, macOS или Linux. Если определение ошиблось или нужен другой компьютер, откройте **Другое устройство**. Для неизвестной ОС сразу доступны все варианты. Прямые файлы по-прежнему выбираются из актуального стабильного релиза AmneziaVPN.
 3. Установите приложение.
 4. Вернитесь на страницу, задайте имя устройства и нажмите **Получить подключение**.
 5. Нажмите **Добавить в AmneziaVPN** и подтвердите импорт в приложении. iOS может открыть меню «Поделиться»: выберите AmneziaVPN.

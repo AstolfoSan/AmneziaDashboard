@@ -9,6 +9,16 @@ All user-visible changes are recorded here. Versions follow Semantic Versioning.
 - Clean-VPS direct/cascade acceptance and real-device validation.
 - Reviewed in-place upgrade/migration tooling; the installer remains fresh-only.
 
+## [1.1.1] — 2026-10-26
+
+### Improved / Улучшено
+
+- Invitation links detect Android, iPhone/iPad (including desktop-style iPadOS), Windows, macOS and Linux locally in the browser.
+- Only downloads for the current OS appear by default. Android keeps both APK and Google Play; other platforms and compatibility help remain under Another device.
+- Unknown/unsupported OS and unavailable JavaScript retain manual download options. Detection never starts downloads or issues VPN profiles automatically.
+- Russian/English captions, updated invitation screenshots and nine regression tests.
+- No VPN, credentials, database, lifetime meters or existing profile/subscription changes.
+
 ## [1.1.0] — 2026-10-26
 
 ### Added / Добавлено
