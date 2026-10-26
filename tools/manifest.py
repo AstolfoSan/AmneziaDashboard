@@ -18,5 +18,5 @@ if __name__=='__main__':
     path=ROOT/'MANIFEST.sha256.json';value=expected()
     if args.check:
         if json.loads(path.read_text(encoding='utf-8'))!=value:raise SystemExit('Embedded manifest is stale; run python tools/manifest.py')
-    else:path.write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+    else:path.write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8',newline='\n')
     print(json.dumps({'embedded_files':len(value),'manifest_matches':True}))
