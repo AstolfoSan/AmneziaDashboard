@@ -26,8 +26,8 @@ def build():
                 destination=licenses/(name+'-'+str(item).split('.dist-info/',1)[-1].replace('/','_'))
                 destination.write_bytes(dist.locate_file(item).read_bytes())
     for name,source in [('Python-LICENSE.txt',Path(sys.base_prefix)/'LICENSE.txt'),
-                        ('Tcl-license.txt',Path(sys.base_prefix)/'tcl/tcl8.6/license.terms'),
-                        ('Tk-license.txt',Path(sys.base_prefix)/'tcl/tk8.6/license.terms')]:
+                        ('Tcl-license.txt',ROOT/'docs/licenses/tcl-license.txt'),
+                        ('Tk-license.txt',ROOT/'docs/licenses/tk-license.txt')]:
         if not source.is_file():raise SystemExit('Missing runtime license: '+name)
         (licenses/name).write_bytes(source.read_bytes())
     (licenses/'AmneziaDashboard-LICENSE.txt').write_bytes((ROOT/'LICENSE').read_bytes())
