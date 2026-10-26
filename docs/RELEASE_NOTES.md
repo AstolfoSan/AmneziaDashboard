@@ -1,15 +1,17 @@
-# AmneziaDashboard 1.1.1 — Download for your device / Загрузка для вашего устройства
+# AmneziaDashboard 1.2.0 — A familiar setup / Установщик в стиле дашборда
 
-Invitation pages now detect the device OS and show only relevant downloads by default:
+The Windows wizard now follows the dashboard's visual language:
 
-- Android: APK and Google Play.
-- iPhone/iPad: App Store, including iPadOS using a desktop-style browser.
-- Windows, macOS and Linux: the matching official app download.
-- Another device reveals other platforms; unknown OS retains manual choices.
+- Rounded dark cards, the original dashboard icon and blue/purple/orange accents.
+- Clear direct/cascade selection and fields only for the selected SSH login method.
+- Fixed main actions, slimmer scrolling, aligned tabs and a calmer progress view.
+- Native dark title bar on supported Windows, with a matching EXE icon.
+- Refreshed Russian/English setup screenshots and GUI regression coverage.
+- Faster card repaints: local DEMO first layout measured 0.09s instead of 2.73s after removing tiny repeated texture tiles. This is not a promise about cold EXE extraction time.
 
-На пригласительной странице теперь показывается загрузка для ОС текущего устройства. Остальные варианты спрятаны под «Другое устройство». Определение выполняется локально, без стороннего сервиса; ничего не скачивается и профиль не создаётся автоматически.
+Windows-мастер теперь оформлен как дашборд: скруглённые карточки, фирменные оттенки и значок, аккуратные поля, фиксированные кнопки и более понятные шаги. Способ входа показывает только нужные поля, а переключение языка и режима не теряет введённые значения. Обе инструкции обновлены свежими снимками DEMO.
 
-Latest stable upstream resolution, manual import, issued configs, subscriptions, keys, database and lifetime counters are unchanged. Russian and English are supported; invitation screenshots are updated.
+No new UI dependencies. Host-key verification, explicit plan and CA consent, backups, verified official downloads and DEMO safeguards are unchanged. This is not a provisioning-engine update and does not install or update any live server.
 
 ## Downloads / Скачать
 
@@ -18,8 +20,8 @@ Latest stable upstream resolution, manual import, issued configs, subscriptions,
 - **Windows-licenses.zip** — bundled dependency/runtime notices.
 - **SHA256SUMS** — verify files from this same release.
 
-[Русская инструкция](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.1.1/docs/INSTALL_RU.md) · [English guide](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.1.1/docs/INSTALL_EN.md)
+[Русская инструкция](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.2.0/docs/INSTALL_RU.md) · [English guide](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.2.0/docs/INSTALL_EN.md)
 
-327 automated tests and five engine-free Compose variants are checked. Browser QA uses synthetic data; physical phone acceptance and full clean-VPS provisioning remain pending. Do not rerun the fresh installer over a working VPN. There is no automatic in-place updater.
+336 automated tests and five engine-free Compose variants are checked. Native Windows QA uses synthetic data; physical phone acceptance and full clean-VPS provisioning remain pending. Do not rerun the fresh installer over a working VPN. There is no automatic in-place updater.
 
 This publication does not change live servers. No production addresses, credentials, databases, issued profiles or invitations are included. Original code: MIT; third-party rights remain applicable.

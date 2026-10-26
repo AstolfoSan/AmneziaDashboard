@@ -9,6 +9,19 @@ All user-visible changes are recorded here. Versions follow Semantic Versioning.
 - Clean-VPS direct/cascade acceptance and real-device validation.
 - Reviewed in-place upgrade/migration tooling; the installer remains fresh-only.
 
+## [1.2.0] — 2026-10-26
+
+### Improved / Улучшено
+
+- Redesigned the Windows wizard to match the dashboard: rounded dark cards, original dashboard icon and blue/purple/orange accents.
+- Clear route selection, focused password/SSH-key forms, fixed action bar, slim scrollbars and a quieter installation log.
+- Matching dark native title bar on supported Windows versions, bundled EXE icon and refreshed RU/EN screenshots.
+- Form values survive language, mode and advanced-options changes. Hidden authentication fields are retained in memory, not submitted for the other method.
+- No new UI dependencies. SSH host approval, plan consent, backup workflow, DEMO safeguards and provisioning logic are unchanged.
+- Local synthetic GUI checks cover both languages/modes, secret masking, no implicit CA consent, small-window scrolling and disabled controls.
+- Larger nine-slice texture centres avoid thousands of tiny Tk blits per card repaint; minimum widget geometry stays unchanged, including at HiDPI.
+- Работающие VPN, выданные профили, клиенты и серверная панель не изменяются.
+
 ## [1.1.1] — 2026-10-26
 
 ### Improved / Улучшено

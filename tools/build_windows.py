@@ -10,6 +10,8 @@ import sys
 import zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'installer'))
+from branding import icon_ico
 
 
 def build():
@@ -35,7 +37,8 @@ def build():
         (licenses/name).write_bytes(source.read_bytes())
     (licenses/'AmneziaDashboard-LICENSE.txt').write_bytes((ROOT/'LICENSE').read_bytes())
     (licenses/'BUILD.json').write_text(json.dumps({'python':platform.python_version(),'platform':'Windows x64','packages':packages},indent=2),encoding='utf-8')
-    args=[sys.executable,'-m','PyInstaller','--onefile','--windowed','--noupx','--icon','NONE','--version-file',str(resource),
+    icon=work/'dashboard.ico';icon.write_bytes(icon_ico())
+    args=[sys.executable,'-m','PyInstaller','--onefile','--windowed','--noupx','--icon',str(icon),'--version-file',str(resource),
           '--name','AmneziaDashboardSetup','--distpath',str(output),'--workpath',str(work/'pyinstaller'),'--specpath',str(work),
           '--paths',str(ROOT/'installer'),'--collect-all','paramiko','--collect-all','cryptography','--collect-all','bcrypt','--collect-all','nacl']
     for source,dest in [('installer/portable','portable'),('installer/messages_en.json','.'),('installer/node_install.py','.'),

@@ -16,6 +16,7 @@ from model import Login,Settings
 from provision import Runner
 from version import VERSION
 import windows_client
+from gui_theme import COLORS as C,apply_theme,brand_icon,dark_titlebar
 
 TERMS='https://letsencrypt.org/repository/'
 
@@ -30,23 +31,35 @@ class NodeFields:
         self.key=tk.StringVar(master);self.passphrase=tk.StringVar(master)
 
     def render(self,parent,title):
-        box=ttk.LabelFrame(parent,text=title,padding=12);box.columnconfigure(1,weight=1)
-        fields=[(t('Публичный IPv4','Public IPv4'),self.ip,False),(t('SSH-порт','SSH port'),self.port,False),
-                (t('Пароль root','Root password'),self.password,True),(t('Файл SSH-ключа','SSH private key file'),self.key,False),
-                (t('Пароль ключа','Key passphrase'),self.passphrase,True)]
-        for row,(caption,var,secret) in enumerate(fields):
-            ttk.Label(box,text=caption).grid(row=row,column=0,sticky='w',padx=(0,8),pady=4)
-            ttk.Entry(box,textvariable=var,show='●' if secret else '',width=22).grid(row=row,column=1,sticky='ew',pady=4)
-            if var is self.key:ttk.Button(box,text='…',width=3,command=self.choose).grid(row=row,column=2,padx=(5,0))
-        methods=ttk.Frame(box);methods.grid(row=5,column=0,columnspan=3,sticky='w',pady=(8,0))
-        ttk.Radiobutton(methods,text=t('Пароль','Password'),variable=self.auth,value='password').pack(side='left')
-        ttk.Radiobutton(methods,text=t('SSH-ключ','SSH key'),variable=self.auth,value='key').pack(side='left',padx=10)
-        ttk.Label(box,text=t('Пользователь SSH: root','SSH user: root'),style='Muted.TLabel').grid(row=6,column=0,columnspan=3,sticky='w',pady=(6,0))
+        box=ttk.Frame(parent,style='Card.TFrame',padding=20)
+        ttk.Label(box,text=t('ПОДКЛЮЧЕНИЕ ПО SSH','SSH CONNECTION'),style='Eyebrow.TLabel').pack(anchor='w')
+        ttk.Label(box,text=title,style='CardTitle.TLabel').pack(anchor='w',pady=(5,15))
+        address=ttk.Frame(box,style='Surface.TFrame');address.pack(fill='x');address.columnconfigure(0,weight=1)
+        for column,(caption,var,width) in enumerate([(t('Публичный IPv4','Public IPv4'),self.ip,24),(t('SSH-порт','SSH port'),self.port,7)]):
+            field=ttk.Frame(address,style='Surface.TFrame');field.grid(row=0,column=column,sticky='ew',padx=(0,12) if column==0 else 0)
+            ttk.Label(field,text=caption,style='CardMuted.TLabel').pack(anchor='w',pady=(0,6))
+            ttk.Entry(field,textvariable=var,width=width).pack(fill='x')
+        methods=ttk.Frame(box,style='Surface.TFrame');methods.pack(fill='x',pady=(15,12))
+        for value,caption in [('password',t('Пароль','Password')),('key',t('SSH-ключ','SSH key'))]:
+            ttk.Radiobutton(methods,text=caption,variable=self.auth,value=value,style='Segment.TRadiobutton',command=self.render_auth).pack(side='left',padx=(0,8))
+        self.auth_frame=ttk.Frame(box,style='Surface.TFrame');self.auth_frame.pack(fill='x');self.render_auth()
+        ttk.Label(box,text=t('Пользователь: root · секреты только в памяти','User: root · secrets stay in memory'),style='CardMuted.TLabel').pack(anchor='w',pady=(13,0))
         return box
+
+    def render_auth(self):
+        for widget in self.auth_frame.winfo_children():widget.destroy()
+        fields=[(t('Пароль root','Root password'),self.password,True)] if self.auth.get()=='password' else [
+            (t('Файл приватного ключа','Private key file'),self.key,False),
+            (t('Пароль ключа (если есть)','Key passphrase (if set)'),self.passphrase,True)]
+        for caption,var,secret in fields:
+            ttk.Label(self.auth_frame,text=caption,style='CardMuted.TLabel').pack(anchor='w',pady=(0,6))
+            row=ttk.Frame(self.auth_frame,style='Surface.TFrame');row.pack(fill='x',pady=(0,4))
+            if var is self.key:ttk.Button(row,text='…',width=3,command=self.choose).pack(side='right',padx=(8,0))
+            ttk.Entry(row,textvariable=var,show='●' if secret else '',width=20).pack(side='left',fill='x',expand=True)
 
     def choose(self):
         value=filedialog.askopenfilename(title=t('Приватный SSH-ключ (не .pub)','SSH private key (not .pub)'))
-        if value:self.key.set(value);self.auth.set('key')
+        if value:self.key.set(value);self.auth.set('key');self.render_auth()
 
     def login(self):
         return Login(self.ip.get().strip(),int(self.port.get()),password=self.password.get() if self.auth.get()=='password' else '',
@@ -58,86 +71,94 @@ class NodeFields:
 class App:
     def __init__(self,lang='auto',demo=False,mode='direct'):
         set_language(lang);self.demo=demo;self.running=False;self.client_busy=False
-        self.root=tk.Tk();width=min(1040,self.root.winfo_screenwidth()-60);height=min(790,self.root.winfo_screenheight()-70)
-        self.root.geometry(str(width)+'x'+str(height));self.root.minsize(min(980,width),min(650,height));self.root.configure(bg='#141414')
+        self.root=tk.Tk();width=min(1120,self.root.winfo_screenwidth()-60);height=min(880,self.root.winfo_screenheight()-70)
+        self.root.geometry(str(width)+'x'+str(height));self.root.minsize(min(920,width),min(680,height));self.root.configure(bg=C['bg'])
         self.mode=tk.StringVar(self.root,value=mode);self.lang=tk.StringVar(self.root,value='English' if language()=='en' else 'Русский')
         self.foreign=NodeFields(self.root,'203.0.113.20' if demo else '');self.entry=NodeFields(self.root,'203.0.113.10' if demo else '')
         self.vpn_port=tk.StringVar(self.root,value='39265');self.panel_port=tk.StringVar(self.root,value='10443');self.relay_port=tk.StringVar(self.root,value='443')
         self.email=tk.StringVar(self.root);self.terms=tk.BooleanVar(self.root);self.advanced=tk.BooleanVar(self.root)
         self.events=queue.Queue();self.cancel=threading.Event()
         self.home=Path(os.getenv('LOCALAPPDATA',str(Path.home()/'.local/share')))/'AmneziaDashboardInstaller'
-        self.style();self.render();self.root.protocol('WM_DELETE_WINDOW',self.close);self.root.after(100,self.poll)
+        self.style();self.render();dark_titlebar(self.root);self.root.protocol('WM_DELETE_WINDOW',self.close);self.root.after(100,self.poll)
         self.root.bind('<MouseWheel>',self.scroll_form)
 
     def style(self):
-        style=ttk.Style();style.theme_use('clam')
-        style.configure('.',background='#141414',foreground='#f2f2f2',font=('Segoe UI',10))
-        style.configure('TLabelframe',bordercolor='#404040');style.configure('TLabelframe.Label',foreground='#7EBAD2')
-        style.configure('TEntry',fieldbackground='#242424',foreground='#f2f2f2',insertcolor='#f2f2f2',padding=5)
-        style.configure('TCombobox',fieldbackground='#242424',foreground='#f2f2f2',padding=5)
-        style.map('TCombobox',fieldbackground=[('readonly','#242424')],foreground=[('readonly','#f2f2f2')])
-        style.configure('TButton',background='#242424',padding=(10,7));style.map('TButton',background=[('active','#404040')])
-        style.configure('Primary.TButton',background='#F6A453',foreground='#141414',font=('Segoe UI',10,'bold'))
-        style.map('Primary.TButton',background=[('active','#F6A453')],foreground=[('disabled','#888888')])
-        style.configure('Muted.TLabel',foreground='#bcbcbc',font=('Segoe UI',9))
-        style.configure('TNotebook',background='#141414');style.configure('TNotebook.Tab',padding=(12,7))
-        style.map('TNotebook.Tab',background=[('selected','#303030')],foreground=[('selected','#F6A453')])
-        for kind in ('TRadiobutton','TCheckbutton'):
-            style.map(kind,background=[('active','#242424')],foreground=[('active','#f2f2f2')])
+        self.theme=apply_theme(self.root)
 
     def render(self):
         if self.running or self.client_busy:return
+        position=self.form_canvas.yview()[0] if hasattr(self,'form_canvas') and self.form_canvas.winfo_exists() else 0
         for widget in self.root.winfo_children():widget.destroy()
         self.root.title('AmneziaDashboard Setup '+VERSION+(' · DEMO' if self.demo else ''))
-        container=ttk.Frame(self.root,padding=20);container.pack(fill='both',expand=True)
+        container=ttk.Frame(self.root,padding=(26,22,26,18));container.pack(fill='both',expand=True)
         top=ttk.Frame(container);top.pack(fill='x')
-        ttk.Label(top,text='AmneziaDashboard',font=('Segoe UI',23,'bold')).pack(side='left')
+        brand_icon(top).pack(side='left',padx=(0,12))
+        title=ttk.Frame(top);title.pack(side='left')
+        ttk.Label(title,text='AmneziaDashboard',style='Title.TLabel').pack(anchor='w')
+        ttk.Label(title,text=t('Установка VPN и панели управления','VPN & dashboard setup'),style='Subtitle.TLabel').pack(anchor='w',pady=(1,0))
         self.langbox=ttk.Combobox(top,textvariable=self.lang,values=['Русский','English'],state='readonly',width=10)
         self.langbox.pack(side='right');self.langbox.bind('<<ComboboxSelected>>',self.change_language)
-        subtitle=t('Установка ','Setup ')+VERSION+t(' · только новые Ubuntu 24.04 VPS',' · fresh Ubuntu 24.04 VPSs only')
-        if self.demo:subtitle=t('ДЕМОНСТРАЦИЯ · пример адресов · установка и загрузка отключены','DEMO · example addresses · installation and downloads disabled')
-        ttk.Label(container,text=subtitle,foreground='#9B8BC1').pack(anchor='w',pady=(4,12))
+        ttk.Label(top,text='v'+VERSION,style='Version.TLabel',padding=(10,5)).pack(side='right',padx=14)
+        if self.demo:
+            ttk.Label(container,text=t('ДЕМО · вымышленные адреса · установка и загрузки отключены','DEMO · example addresses · installation and downloads disabled'),style='Demo.TLabel',padding=(12,7)).pack(fill='x',pady=(18,14))
+        else:ttk.Label(container,text=t('Только новые Ubuntu 24.04 VPS · существующий VPN не перезаписывается','Fresh Ubuntu 24.04 VPSs only · existing VPNs are never overwritten'),style='Muted.TLabel').pack(anchor='w',pady=(18,14))
         self.tabs=ttk.Notebook(container);self.tabs.pack(fill='both',expand=True)
-        viewport=ttk.Frame(self.tabs);progress=ttk.Frame(self.tabs,padding=14)
-        self.tabs.add(viewport,text=t('1. Подключение и настройки','1. Connection and settings'));self.tabs.add(progress,text=t('2. Ход установки','2. Installation progress'))
-        self.form_canvas=tk.Canvas(viewport,bg='#141414',highlightthickness=0)
+        viewport=ttk.Frame(self.tabs);progress=ttk.Frame(self.tabs,padding=(0,10,0,0))
+        self.tabs.add(viewport,text=t('01   Подключение и настройки','01   Connection & settings'));self.tabs.add(progress,text=t('02   Ход установки','02   Installation progress'))
+        self.form_canvas=tk.Canvas(viewport,bg=C['bg'],highlightthickness=0)
         scrollbar=ttk.Scrollbar(viewport,orient='vertical',command=self.form_canvas.yview)
         scrollbar.pack(side='right',fill='y');self.form_canvas.pack(side='left',fill='both',expand=True)
         self.form_canvas.configure(yscrollcommand=scrollbar.set)
-        form=ttk.Frame(self.form_canvas,padding=14);form_id=self.form_canvas.create_window((0,0),window=form,anchor='nw')
+        form=ttk.Frame(self.form_canvas,padding=(0,10,14,8));form_id=self.form_canvas.create_window((0,0),window=form,anchor='nw')
         form.bind('<Configure>',lambda event:self.form_canvas.configure(scrollregion=self.form_canvas.bbox('all')))
         self.form_canvas.bind('<Configure>',lambda event:self.form_canvas.itemconfigure(form_id,width=event.width))
-        ttk.Label(form,text=t('От 1 ГБ RAM, 3 ГБ свободного места и /dev/net/tun. Существующий VPN не перезаписывается.',
-                             'At least 1 GB RAM, 3 GB free disk and /dev/net/tun. Existing VPNs are never overwritten.'),style='Muted.TLabel').pack(anchor='w')
-        modes=ttk.Frame(form);modes.pack(fill='x',pady=12)
-        for value,caption in [('direct',t('Один зарубежный VPS','One foreign VPS')),('cascade',t('Каскад: RU → зарубежный VPS','Cascade: RU → foreign VPS'))]:
-            ttk.Radiobutton(modes,text=caption,variable=self.mode,value=value,command=self.render).pack(side='left',padx=(0,25))
+        ttk.Label(form,text=t('Выберите схему подключения','Choose your connection'),font=('Segoe UI',14,'bold')).pack(anchor='w')
+        ttk.Label(form,text=t('От 1 ГБ RAM, 3 ГБ свободного диска и /dev/net/tun на каждом VPS.','Each VPS needs 1 GB RAM, 3 GB free disk and /dev/net/tun.'),style='Muted.TLabel').pack(anchor='w',pady=(4,12))
+        modes=ttk.Frame(form);modes.pack(fill='x',pady=(0,16));modes.columnconfigure((0,1),weight=1,uniform='modes')
+        for index,(value,caption) in enumerate([('direct',t('Один зарубежный VPS','One foreign VPS')),('cascade',t('Каскад: RU → зарубежный VPS','Cascade: RU → foreign VPS'))]):
+            ttk.Radiobutton(modes,text=caption,variable=self.mode,value=value,command=self.render,style='Mode.TRadiobutton').grid(row=0,column=index,sticky='ew',padx=(0,8) if index==0 else (8,0))
         nodes=ttk.Frame(form);nodes.pack(fill='x');nodes.columnconfigure(0,weight=1);nodes.columnconfigure(1,weight=1)
         self.foreign.render(nodes,t('Зарубежный сервер + панель','Foreign server + dashboard')).grid(row=0,column=0,sticky='nsew',padx=(0,8))
         if self.mode.get()=='cascade':self.entry.render(nodes,t('RU-вход каскада','RU cascade entry')).grid(row=0,column=1,sticky='nsew',padx=(8,0))
         else:
-            ttk.Label(nodes,text=t('Прямой VPN\n\nТелефон / компьютер → зарубежный VPS\n\nПанель и AmneziaWG — на одном сервере.\nRU-сервер не нужен.',
-                                   'Direct VPN\n\nPhone / computer → foreign VPS\n\nDashboard and AmneziaWG on one server.\nNo RU server needed.'),foreground='#7EBAD2',wraplength=390,justify='left').grid(row=0,column=1,sticky='nw',padx=20,pady=15)
-        ttk.Checkbutton(form,text=t('Дополнительно: порты','Advanced: ports'),variable=self.advanced,command=self.render).pack(anchor='w',pady=(10,6))
+            route=ttk.Frame(nodes,style='Card.TFrame',padding=20);route.grid(row=0,column=1,sticky='nsew',padx=(8,0))
+            ttk.Label(route,text=t('ПРЯМОЙ VPN','DIRECT VPN'),style='Eyebrow.TLabel').pack(anchor='w')
+            ttk.Label(route,text=t('Всё на одном сервере','Everything on one server'),style='CardTitle.TLabel').pack(anchor='w',pady=(5,16))
+            for caption,color in [(t('Телефон / компьютер','Phone / computer'),C['text']),('↓',C['purple']),(t('Зарубежный VPS','Foreign VPS'),C['blue']),('↓',C['purple']),(t('Интернет','Internet'),C['orange'])]:
+                ttk.Label(route,text=caption,style='Card.TLabel',foreground=color,font=('Segoe UI',11,'bold')).pack(anchor='w',pady=3)
+            ttk.Label(route,text=t('Панель и AmneziaWG — вместе.\nRU-сервер не нужен.','Dashboard and AmneziaWG together.\nNo RU server needed.'),style='CardMuted.TLabel',justify='left').pack(anchor='w',pady=(12,0))
+        options=ttk.Frame(form,style='Card.TFrame',padding=20);options.pack(fill='x',pady=(16,0))
+        ttk.Label(options,text=t('Параметры установки','Installation options'),style='CardTitle.TLabel').pack(anchor='w',pady=(0,10))
+        ttk.Checkbutton(options,text=t('Дополнительно: порты','Advanced: ports'),variable=self.advanced,command=self.render).pack(anchor='w',pady=(0,6))
         if self.advanced.get():
-            ports=ttk.Frame(form);ports.pack(fill='x',pady=(0,6))
+            ports=ttk.Frame(options,style='Surface.TFrame');ports.pack(fill='x',pady=(0,10))
             for caption,var in [('VPN UDP',self.vpn_port),('Dashboard TCP',self.panel_port),('Cascade TLS TCP',self.relay_port)]:
-                ttk.Label(ports,text=caption).pack(side='left',padx=(0,6));ttk.Entry(ports,textvariable=var,width=7).pack(side='left',padx=(0,18))
-        cert=ttk.Frame(form);cert.pack(fill='x',pady=5)
-        ttk.Label(cert,text=t('Email для сертификата (необязательно)','Certificate email (optional)')).pack(side='left',padx=(0,12))
+                if caption=='Cascade TLS TCP' and self.mode.get()!='cascade':continue
+                ttk.Label(ports,text=caption,style='CardMuted.TLabel').pack(side='left',padx=(0,6));ttk.Entry(ports,textvariable=var,width=7).pack(side='left',padx=(0,18))
+        cert=ttk.Frame(options,style='Surface.TFrame');cert.pack(fill='x',pady=5)
+        ttk.Label(cert,text=t('Email для сертификата (необязательно)','Certificate email (optional)'),style='CardMuted.TLabel').pack(side='left',padx=(0,12))
         ttk.Entry(cert,textvariable=self.email,width=32).pack(side='left')
-        consent=ttk.Frame(form);consent.pack(fill='x',pady=5)
+        consent=ttk.Frame(options,style='Surface.TFrame');consent.pack(fill='x',pady=5)
         ttk.Checkbutton(consent,text=t('Я принимаю условия Let’s Encrypt','I accept the Let’s Encrypt terms'),variable=self.terms).pack(side='left')
         ttk.Button(consent,text=t('Прочитать ↗','Read terms ↗'),command=lambda:webbrowser.open(TERMS)).pack(side='left',padx=8)
-        ttk.Label(form,text=t('Для сертификата нужен TCP 80. IP попадёт в публичный журнал сертификатов.\nПеред изменениями: проверка SSH-отпечатков, план и резервные копии.',
-                             'Certificate issuance needs TCP 80. IPs appear in public certificate logs.\nBefore changes: SSH fingerprint verification, plan approval and backups.'),style='Muted.TLabel').pack(anchor='w',pady=(4,0))
-        self.logbox=tk.Text(progress,bg='#1c1c1c',fg='#f2f2f2',insertbackground='#F6A453',wrap='word',height=16,state='disabled',font=('Consolas',10))
-        self.logbox.pack(fill='both',expand=True);self.resultframe=ttk.Frame(progress);self.resultframe.pack(fill='x',pady=(8,0))
+        ttk.Label(options,text=t('Для HTTPS нужен TCP 80. IP появится в публичном журнале сертификатов.',
+                             'HTTPS needs TCP 80. IPs appear in public certificate logs.'),style='CardMuted.TLabel').pack(anchor='w',pady=(4,0))
+        logcard=ttk.Frame(progress,style='Card.TFrame',padding=20);logcard.pack(fill='both',expand=True)
+        ttk.Label(logcard,text=t('Ход установки','Installation progress'),style='CardTitle.TLabel').pack(anchor='w')
+        ttk.Label(logcard,text=t('Проверка → подтверждение → бэкапы → установка','Checks → approval → backups → installation'),style='CardMuted.TLabel').pack(anchor='w',pady=(6,15))
+        logarea=ttk.Frame(logcard,style='Surface.TFrame');logarea.pack(fill='both',expand=True)
+        self.logbox=tk.Text(logarea,bg=C['surface'],fg=C['text'],insertbackground=C['orange'],wrap='word',height=16,state='disabled',font=('Consolas',10),borderwidth=0,highlightthickness=0,padx=2,pady=8)
+        logscroll=ttk.Scrollbar(logarea,orient='vertical',command=self.logbox.yview);logscroll.pack(side='right',fill='y')
+        self.logbox.configure(yscrollcommand=logscroll.set);self.logbox.pack(side='left',fill='both',expand=True)
+        self.resultframe=ttk.Frame(progress);self.resultframe.pack(fill='x',pady=(8,0))
+        self.append(t('Здесь появятся результаты проверки и этапы установки.\nБез подтверждения серверов и плана изменения не начнутся.',
+                      'Checks and installation stages will appear here.\nNo changes begin before server and plan approval.'))
         footer=ttk.Frame(container);footer.pack(fill='x',pady=(14,0))
         self.client_button=ttk.Button(footer,text=t('AmneziaVPN для этого ПК…','AmneziaVPN for this PC…'),command=self.install_client);self.client_button.pack(side='left')
         self.cancel_button=ttk.Button(footer,text=t('Остановить после этапа','Stop after this stage'),command=self.stop,state='disabled');self.cancel_button.pack(side='left',padx=10)
         self.start_button=ttk.Button(footer,text=t('Проверить и установить','Check and install'),style='Primary.TButton',command=self.start);self.start_button.pack(side='right')
         if self.demo:self.start_button.configure(state='disabled');self.client_button.configure(state='disabled')
+        self.root.after_idle(lambda:self.form_canvas.yview_moveto(position))
 
     def change_language(self,event=None):
         if self.running or self.client_busy:return

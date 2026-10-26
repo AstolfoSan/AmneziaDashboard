@@ -1,4 +1,4 @@
-# Installing AmneziaDashboard 1.1.1
+# Installing AmneziaDashboard 1.2.0
 
 [Русский](INSTALL_RU.md) · [Home](../README.md) · [Releases](https://github.com/AstolfoSan/AmneziaDashboard/releases)
 
@@ -73,6 +73,8 @@ The EXE is currently **unsigned**. Any Windows/antivirus warning decision belong
 10. Click **Check and install**.
 
 These are real application screenshots in safe DEMO mode: example addresses only, with SSH installation and downloads disabled.
+
+The wizard matches the dashboard: dark cards and blue, purple and orange accents. **Password / SSH key** shows only the relevant fields without losing typed values. On smaller screens, scroll the central form; the main actions remain fixed below it. Ports are inside **Advanced: ports**; the inter-server TLS port is shown only for cascade mode.
 
 ![Windows direct VPN setup in English](images/setup-direct-en.png)
 
