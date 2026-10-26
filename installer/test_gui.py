@@ -31,7 +31,7 @@ class GuiTests(unittest.TestCase):
         self.app=App('ru',True,'direct');self.app.root.withdraw()
 
     def tearDown(self):
-        self.app.root.destroy();self.runner.assert_not_called();self.downloader.assert_not_called()
+        self.app.close();self.runner.assert_not_called();self.downloader.assert_not_called()
         self.network.stop();self.download.stop();i18n.set_language('ru')
 
     def widgets(self,parent=None):
@@ -64,6 +64,44 @@ class GuiTests(unittest.TestCase):
         self.assertEqual(self.app.foreign.password.get(),'SYNTHETIC_SECRET')
         self.assertEqual(self.app.vpn_port.get(),'40000');self.assertFalse(self.app.terms.get())
         self.assertFalse(self.app.running)
+
+    def test_atomic_render_keeps_old_view_until_new_layout_is_ready(self):
+        previous=self.app.container;observed=[];layout=self.app.root.update_idletasks
+        def observe():
+            observed.append(bool(previous.winfo_exists()));layout()
+        self.app.mode.set('cascade')
+        with patch.object(self.app.root,'update_idletasks',side_effect=observe):self.app.render()
+        self.assertTrue(observed);self.assertTrue(all(observed))
+        self.assertFalse(previous.winfo_exists());self.assertIsNot(self.app.container,previous)
+        self.assertEqual(self.app.container.winfo_x(),0)
+
+    def test_first_visible_window_already_has_complete_laid_out_form(self):
+        original_tk=tk.Tk;observed=[];map_opacity=[];created=[];app=None
+        def make_root():
+            root=original_tk();created.append(root)
+            def mapped(event):
+                if event.widget is not root:return
+                map_opacity.append(float(root.attributes('-alpha')))
+            attributes=root.attributes
+            def reveal(*args,**kwargs):
+                if len(args)<2 or args[0]!='-alpha' or float(args[1])!=1.0:return attributes(*args,**kwargs)
+                children=root.winfo_children();entries=[w for w in self.widgets(root) if isinstance(w,ttk.Entry) and not isinstance(w,ttk.Combobox)]
+                actions=[w for w in self.widgets(root) if isinstance(w,ttk.Button) and w.cget('text')=='Check and install']
+                observed.append({'x':int(children[0].place_info().get('x',-1)) if children else None,
+                                 'widths':[w.winfo_width() for w in entries],'actions':len(actions)})
+                return attributes(*args,**kwargs)
+            root.attributes=reveal
+            root.bind('<Map>',mapped,add='+');return root
+        try:
+            with patch('setup_gui.tk.Tk',side_effect=make_root):app=App('en',True,'cascade')
+            app.root.update()
+            self.assertTrue(observed)
+            self.assertTrue(all(view['x']==0 and len(view['widths'])==7 and min(view['widths'])>1 and view['actions']==1 for view in observed),observed)
+            self.assertTrue(map_opacity);self.assertTrue(all(opacity==0.0 for opacity in map_opacity))
+        finally:
+            if app is not None:app.close()
+            else:
+                for root in created:root.destroy()
 
     def test_demo_handlers_cannot_provision_or_download(self):
         self.app.start();self.app.install_client();self.assertFalse(self.app.running);self.assertFalse(self.app.client_busy)

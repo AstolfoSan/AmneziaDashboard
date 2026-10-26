@@ -71,7 +71,8 @@ class NodeFields:
 class App:
     def __init__(self,lang='auto',demo=False,mode='direct'):
         set_language(lang);self.demo=demo;self.running=False;self.client_busy=False
-        self.root=tk.Tk();width=min(1120,self.root.winfo_screenwidth()-60);height=min(880,self.root.winfo_screenheight()-70)
+        self.root=tk.Tk();self.root.withdraw();self.root.attributes('-alpha',0.0)
+        width=min(1120,self.root.winfo_screenwidth()-60);height=min(880,self.root.winfo_screenheight()-70)
         self.root.geometry(str(width)+'x'+str(height));self.root.minsize(min(920,width),min(680,height));self.root.configure(bg=C['bg'])
         self.mode=tk.StringVar(self.root,value=mode);self.lang=tk.StringVar(self.root,value='English' if language()=='en' else 'Русский')
         self.foreign=NodeFields(self.root,'203.0.113.20' if demo else '');self.entry=NodeFields(self.root,'203.0.113.10' if demo else '')
@@ -79,8 +80,12 @@ class App:
         self.email=tk.StringVar(self.root);self.terms=tk.BooleanVar(self.root);self.advanced=tk.BooleanVar(self.root)
         self.events=queue.Queue();self.cancel=threading.Event()
         self.home=Path(os.getenv('LOCALAPPDATA',str(Path.home()/'.local/share')))/'AmneziaDashboardInstaller'
-        self.style();self.render();dark_titlebar(self.root);self.root.protocol('WM_DELETE_WINDOW',self.close);self.root.after(100,self.poll)
+        self.style();self.render();dark_titlebar(self.root)
+        self.root.protocol('WM_DELETE_WINDOW',self.close);self._poll_job=self.root.after(100,self.poll)
         self.root.bind('<MouseWheel>',self.scroll_form)
+        # A withdrawn root may defer child geometry until its first map. Realise
+        # it invisibly, flush geometry/paint work, then reveal one complete view.
+        self.root.deiconify();self.root.update();self.root.attributes('-alpha',1.0)
 
     def style(self):
         self.theme=apply_theme(self.root)
@@ -88,9 +93,12 @@ class App:
     def render(self):
         if self.running or self.client_busy:return
         position=self.form_canvas.yview()[0] if hasattr(self,'form_canvas') and self.form_canvas.winfo_exists() else 0
-        for widget in self.root.winfo_children():widget.destroy()
+        previous=getattr(self,'container',None)
         self.root.title('AmneziaDashboard Setup '+VERSION+(' · DEMO' if self.demo else ''))
-        container=ttk.Frame(self.root,padding=(26,22,26,18));container.pack(fill='both',expand=True)
+        # Lay out the replacement outside the visible client area while keeping
+        # the previous view intact. Expose it only after all geometry is ready.
+        container=ttk.Frame(self.root,padding=(26,22,26,18))
+        container.place(x=-30000,y=0,relwidth=1,relheight=1)
         top=ttk.Frame(container);top.pack(fill='x')
         brand_icon(top).pack(side='left',padx=(0,12))
         title=ttk.Frame(top);title.pack(side='left')
@@ -158,7 +166,10 @@ class App:
         self.cancel_button=ttk.Button(footer,text=t('Остановить после этапа','Stop after this stage'),command=self.stop,state='disabled');self.cancel_button.pack(side='left',padx=10)
         self.start_button=ttk.Button(footer,text=t('Проверить и установить','Check and install'),style='Primary.TButton',command=self.start);self.start_button.pack(side='right')
         if self.demo:self.start_button.configure(state='disabled');self.client_button.configure(state='disabled')
-        self.root.after_idle(lambda:self.form_canvas.yview_moveto(position))
+        self.root.update_idletasks();self.form_canvas.yview_moveto(position)
+        container.place_configure(x=0);container.lift();self.root.update_idletasks()
+        self.container=container
+        if previous is not None:previous.destroy()
 
     def change_language(self,event=None):
         if self.running or self.client_busy:return
@@ -232,7 +243,7 @@ class App:
                     if kind=='client_error':messagebox.showerror(t('Не удалось загрузить клиент','Client download failed'),value)
                     else:messagebox.showinfo('AmneziaVPN',t('Открыт официальный установщик. Завершите его шаги и подтверждения Windows.','Official setup opened. Complete its steps and Windows confirmations.'))
         except queue.Empty:pass
-        self.root.after(100,self.poll)
+        self._poll_job=self.root.after(100,self.poll)
 
     def install_client(self):
         if self.demo or self.running or self.client_busy:return
@@ -254,7 +265,7 @@ class App:
     def close(self):
         if self.running:self.stop();return
         if self.client_busy:messagebox.showinfo('AmneziaVPN',t('Дождитесь завершения загрузки.','Wait for the download to finish.'));return
-        self.root.destroy()
+        self.root.after_cancel(self._poll_job);self.root.destroy()
 
     def run(self):self.root.mainloop()
 

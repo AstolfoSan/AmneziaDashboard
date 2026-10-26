@@ -9,7 +9,7 @@ All user-visible changes are recorded here. Versions follow Semantic Versioning.
 - Clean-VPS direct/cascade acceptance and real-device validation.
 - Reviewed in-place upgrade/migration tooling; the installer remains fresh-only.
 
-## [1.2.0] — 2026-10-26
+## [1.2.0] — 2026-10-27
 
 ### Improved / Улучшено
 
@@ -20,6 +20,9 @@ All user-visible changes are recorded here. Versions follow Semantic Versioning.
 - No new UI dependencies. SSH host approval, plan consent, backup workflow, DEMO safeguards and provisioning logic are unchanged.
 - Local synthetic GUI checks cover both languages/modes, secret masking, no implicit CA consent, small-window scrolling and disabled controls.
 - Larger nine-slice texture centres avoid thousands of tiny Tk blits per card repaint; minimum widget geometry stays unchanged, including at HiDPI.
+- The initial window stays hidden until layout is complete. Language/mode/advanced changes prepare a replacement off-screen and keep the old view until the swap, avoiding visible widget-by-widget assembly.
+- Windows is realised at zero opacity so its initial native Map/Configure and paint events finish before the complete view is revealed. The regression checks both SSH cards, final input geometry and the main action before visibility.
+- Invitation pages use a compact personal setup guide instead of marketing slogans; profile issuance and import controls are inside step two, before the illustrated third step, on mobile and desktop.
 - Работающие VPN, выданные профили, клиенты и серверная панель не изменяются.
 
 ## [1.1.1] — 2026-10-26

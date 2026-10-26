@@ -7,7 +7,9 @@ The Windows wizard now follows the dashboard's visual language:
 - Fixed main actions, slimmer scrolling, aligned tabs and a calmer progress view.
 - Native dark title bar on supported Windows, with a matching EXE icon.
 - Refreshed Russian/English setup screenshots and GUI regression coverage.
-- Faster card repaints: local DEMO first layout measured 0.07s instead of 2.73s after removing tiny repeated texture tiles. Large centres and native solid fills keep idle/focus repaints cheap at HiDPI. This is not a promise about cold EXE extraction time.
+- Faster card repaints: large texture centres and native solid fills avoid thousands of tiny draw calls at HiDPI. Local DEMO window preparation is measured separately from cold EXE extraction; no fixed launch-time promise.
+- Initial layout is prepared before the window appears; language/mode changes keep the previous view until the replacement is ready, avoiding visible piece-by-piece assembly.
+- Personal invitation guide without marketing slogans; profile retrieval is part of step two on every screen size.
 
 Windows-мастер теперь оформлен как дашборд: скруглённые карточки, фирменные оттенки и значок, аккуратные поля, фиксированные кнопки и более понятные шаги. Способ входа показывает только нужные поля, а переключение языка и режима не теряет введённые значения. Обе инструкции обновлены свежими снимками DEMO.
 
@@ -22,6 +24,6 @@ No new UI dependencies. Host-key verification, explicit plan and CA consent, bac
 
 [Русская инструкция](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.2.0/docs/INSTALL_RU.md) · [English guide](https://github.com/AstolfoSan/AmneziaDashboard/blob/v1.2.0/docs/INSTALL_EN.md)
 
-336 automated tests and five engine-free Compose variants are checked. Native Windows QA uses synthetic data; physical phone acceptance and full clean-VPS provisioning remain pending. Do not rerun the fresh installer over a working VPN. There is no automatic in-place updater.
+340 automated tests and five engine-free Compose variants are checked. Native Windows QA uses synthetic data; physical phone acceptance and full clean-VPS provisioning remain pending. Do not rerun the fresh installer over a working VPN. There is no automatic in-place updater.
 
 This publication does not change live servers. No production addresses, credentials, databases, issued profiles or invitations are included. Original code: MIT; third-party rights remain applicable.

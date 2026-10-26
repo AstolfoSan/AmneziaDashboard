@@ -59,7 +59,7 @@ The EXE is currently **unsigned**. Any Windows/antivirus warning decision belong
 
 ## 4. Open the wizard and enter settings
 
-1. Double-click the EXE. First launch may take a few seconds while the embedded runtime extracts.
+1. Double-click the EXE. First launch may take a few seconds while the embedded runtime extracts. The window is shown after its layout is ready, rather than assembling controls in front of you.
 2. Select **English** in the upper-right corner. The web dashboard has its own selector and remembers your choice in the browser.
 3. Select **One foreign VPS** or **Cascade: RU → foreign VPS**.
 4. Under **Foreign server + dashboard**, enter the IPv4 and SSH port.
