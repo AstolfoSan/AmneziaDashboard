@@ -18,6 +18,7 @@ from cryptography.fernet import Fernet
 from flask import Flask, abort, g, jsonify, request, send_from_directory, make_response, has_request_context, redirect
 from werkzeug.middleware.proxy_fix import ProxyFix
 from downloads import ReleaseDownloads, DownloadUnavailable, PLATFORMS
+from api_i18n import error_text,current_language
 
 HASHER = PasswordHasher(time_cost=2, memory_cost=19456, parallelism=1)
 HERE = Path(__file__).parent
@@ -243,13 +244,14 @@ def create_app(config=None, agent=None):
             if not isinstance(request.get_json(),dict): abort(400,'Нужен объект JSON')
     @app.after_request
     def headers(r):
+        r.headers['Content-Language']=current_language()
         r.headers.update({'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Frame-Options':'DENY','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"})
         return r
     @app.errorhandler(Exception)
     def errors(e):
-        if isinstance(e,(ValueError,KeyError,TypeError)): return jsonify(error='Проверьте заполненные поля'),400
+        if isinstance(e,(ValueError,KeyError,TypeError)): return jsonify(error=error_text('Проверьте заполненные поля')),400
         code=getattr(e,'code',500)
-        return jsonify(error=getattr(e,'description','Внутренняя ошибка сервера')),code
+        return jsonify(error=error_text(getattr(e,'description','Внутренняя ошибка сервера'))),code
     @app.get('/healthz')
     def health(): return jsonify(status='ok')
     @app.get('/api/downloads')
@@ -324,6 +326,7 @@ def create_app(config=None, agent=None):
             chart_daily=[dict(r) for r in c.execute('SELECT t.day AS at,SUM(t.rx) AS rx,SUM(t.tx) AS tx FROM traffic_daily t JOIN devices d ON d.id=t.device_id JOIN groups_ gr ON gr.id=d.group_id WHERE t.day>=? AND t.day<?'+chart_scope+' GROUP BY t.day ORDER BY t.day',daily_args)]
             chart_started=c.execute('SELECT MIN(d.created) FROM devices d JOIN groups_ gr ON gr.id=d.group_id'+scope,params).fetchone()[0]
             meta=dict(c.execute('SELECT key,value FROM meta'))
+            if meta.get('sync_error'):meta['sync_error']=error_text(meta['sync_error'])
             chart_info={'window_end':chart_now,'started_at':chart_started,'sampled_at':int(meta.get('last_sync',0)),'timezone':'Europe/Moscow','sample_interval':60,'daily_end':daily_end,'detail_retention_seconds':86400,'daily_retention_days':31}
         return jsonify(devices=devices,groups=groups,chart=chart,chart_samples=chart_samples,chart_daily=chart_daily,chart_info=chart_info,meta=meta,summary=summary)
     @app.post('/api/groups')

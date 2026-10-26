@@ -1,4 +1,5 @@
 """Interactive terminal wizard. Passwords are hidden; no credentials in argv."""
+from i18n import tr,set_language
 import argparse
 import getpass
 import hashlib
@@ -18,68 +19,68 @@ def ask(text,default=''):
     value=input(text+(' ['+str(default)+']' if default!='' else '')+': ').strip()
     return value if value else str(default)
 
-def yes(text):return ask(text+' (да/нет)','нет').lower() in {'да','yes','y'}
+def yes(text):return ask(text+tr(' (да/нет)'),tr('нет')).lower() in {tr('да'),'yes','y'}
 
 def number(text,default):
     while True:
         try:return int(ask(text,default))
-        except ValueError:print('Введите целое число.')
+        except ValueError:print(tr('Введите целое число.'))
 
 def node(title):
-    print('\n'+title+' · SSH-пользователь root')
+    print('\n'+title+tr(' · SSH-пользователь root'))
     while True:
-        host=ask('Публичный IPv4');port=number('SSH-порт',22)
-        method=ask('Доступ: 1 — пароль root, 2 — приватный SSH-ключ','1')
-        if method not in {'1','2'}:print('Выберите 1 или 2.');continue
-        if method=='1':login=Login(host,port,password=getpass.getpass('Пароль root (ввод скрыт): '))
+        host=ask(tr('Публичный IPv4'));port=number(tr('SSH-порт'),22)
+        method=ask(tr('Доступ: 1 — пароль root, 2 — приватный SSH-ключ'),'1')
+        if method not in {'1','2'}:print(tr('Выберите 1 или 2.'));continue
+        if method=='1':login=Login(host,port,password=getpass.getpass(tr('Пароль root (ввод скрыт): ')))
         else:
-            path=ask('Путь к приватному ключу (не .pub)').strip('"')
-            login=Login(host,port,key_file=path,passphrase=getpass.getpass('Пароль ключа, если есть (Enter — без пароля): '))
+            path=ask(tr('Путь к приватному ключу (не .pub)')).strip('"')
+            login=Login(host,port,key_file=path,passphrase=getpass.getpass(tr('Пароль ключа, если есть (Enter — без пароля): ')))
         try:return login.validate()
-        except InstallError as error:print('Ошибка: '+str(error))
+        except InstallError as error:print(tr('Ошибка: ')+str(error))
 
 def collect():
-    if not sys.stdin.isatty():raise InstallError('Нужен интерактивный терминал: ввод SSH-паролей через pipe/файл запрещён')
-    print('AmneziaDashboard '+VERSION+' — пошаговый установщик')
-    print('PREVIEW: первый полный прогон на чистых VPS ещё необходим.')
-    print('Нужны новые Ubuntu 24.04, root, TUN, от 1 ГБ RAM и 3 ГБ свободного диска.')
-    print('Существующие VPN не перезаписываются. Ctrl+C — безопасная остановка между этапами.')
+    if not sys.stdin.isatty():raise InstallError(tr('Нужен интерактивный терминал: ввод SSH-паролей через pipe/файл запрещён'))
+    print('AmneziaDashboard '+VERSION+tr(' — пошаговый установщик'))
+    print(tr('PREVIEW: первый полный прогон на чистых VPS ещё необходим.'))
+    print(tr('Нужны новые Ubuntu 24.04, root, TUN, от 1 ГБ RAM и 3 ГБ свободного диска.'))
+    print(tr('Существующие VPN не перезаписываются. Ctrl+C — безопасная остановка между этапами.'))
     while True:
-        choice=ask('\nРежим: 1 — каскад RU → зарубежный, 2 — только зарубежный','1')
+        choice=ask(tr('\nРежим: 1 — каскад RU → зарубежный, 2 — только зарубежный'),'1')
         if choice in {'1','2'}:break
-        print('Выберите 1 или 2.')
+        print(tr('Выберите 1 или 2.'))
     mode='cascade' if choice=='1' else 'direct'
-    foreign=node('Зарубежный VPS (здесь будет панель)')
-    entry=node('RU-вход каскада') if mode=='cascade' else None
-    print('\nПорты по умолчанию: VPN 39265/udp, панель 10443/tcp, каскад 443/tcp.')
+    foreign=node(tr('Зарубежный VPS (здесь будет панель)'))
+    entry=node(tr('RU-вход каскада')) if mode=='cascade' else None
+    print(tr('\nПорты по умолчанию: VPN 39265/udp, панель 10443/tcp, каскад 443/tcp.'))
     vpn,panel,tls=39265,10443,443
-    if yes('Изменить порты?'):
-        vpn=number('VPN UDP',vpn);panel=number('Панель TCP',panel)
-        if mode=='cascade':tls=number('TLS каскада TCP',tls)
-    email=ask('Email для центра сертификации (необязательно)')
-    print('\nHTTPS по IP: ознакомьтесь с условиями Let’s Encrypt:')
+    if yes(tr('Изменить порты?')):
+        vpn=number('VPN UDP',vpn);panel=number(tr('Панель TCP'),panel)
+        if mode=='cascade':tls=number(tr('TLS каскада TCP'),tls)
+    email=ask(tr('Email для центра сертификации (необязательно)'))
+    print(tr('\nHTTPS по IP: ознакомьтесь с условиями Let’s Encrypt:'))
     print('https://letsencrypt.org/repository/')
-    print('IP панели будет передан CA и опубликован в журналах сертификатов. На зарубежном нужен открытый TCP 80.')
-    consent=yes('Вы принимаете условия Let’s Encrypt для этого выпуска сертификата?')
+    print(tr('IP панели будет передан CA и опубликован в журналах сертификатов. На зарубежном нужен открытый TCP 80.'))
+    consent=yes(tr('Вы принимаете условия Let’s Encrypt для этого выпуска сертификата?'))
     return Settings(mode,foreign,entry,vpn,panel,tls,email,consent).validate()
 
 def confirm_host(host,fingerprint):
-    print('\nНовый SSH-сервер: '+host+'\nОтпечаток: '+fingerprint)
-    print('Сверьте отпечаток с консолью хостинга или доверенным подключением.')
-    return yes('Подтвердить этот SSH-сервер?')
+    print(tr('\nНовый SSH-сервер: ')+host+tr('\nОтпечаток: ')+fingerprint)
+    print(tr('Сверьте отпечаток с консолью хостинга или доверенным подключением.'))
+    return yes(tr('Подтвердить этот SSH-сервер?'))
 
 def confirm_plan(plan):
-    print('\nПлан изменений:')
-    print('  Режим: '+('каскад' if plan['mode']=='cascade' else 'прямой VPN'))
-    print('  VPN-вход: '+plan['entry_ip']+' · UDP '+str(plan['vpn_udp_port']))
-    print('  Зарубежный VPS: '+plan['foreign_ip']+' · Панель: '+plan['panel_url'])
-    print('  Актуальный клиент: '+plan['versions']['amnezia_client']['tag'])
-    print('  Серверный образ: '+plan['versions']['awg']['image'])
-    print('  Сначала — приватные резервные копии обоих VPS (для прямого режима одного).')
-    print('  Затем — Docker, AmneziaWG, панель, новые ключи, правила её портов и таймеры.')
-    print('  Профили VPN-входа: '+plan['networks']['clients'])
-    print('  Это не обновление существующей VPN-установки. Платные услуги не приобретаются.')
-    return ask('Для начала изменений напишите УСТАНОВИТЬ')=='УСТАНОВИТЬ'
+    print(tr('\nПлан изменений:'))
+    print(tr('  Режим: ')+(tr('каскад') if plan['mode']=='cascade' else tr('прямой VPN')))
+    print(tr('  VPN-вход: ')+plan['entry_ip']+' · UDP '+str(plan['vpn_udp_port']))
+    print(tr('  Зарубежный VPS: ')+plan['foreign_ip']+tr(' · Панель: ')+plan['panel_url'])
+    print(tr('  Актуальный клиент: ')+plan['versions']['amnezia_client']['tag'])
+    print(tr('  Серверный образ: ')+plan['versions']['awg']['image'])
+    print(tr('  Сначала — приватные резервные копии обоих VPS (для прямого режима одного).'))
+    print(tr('  Затем — Docker, AmneziaWG, панель, новые ключи, правила её портов и таймеры.'))
+    print(tr('  Профили VPN-входа: ')+plan['networks']['clients'])
+    print(tr('  Это не обновление существующей VPN-установки. Платные услуги не приобретаются.'))
+    return ask(tr('Для начала изменений напишите УСТАНОВИТЬ'))==tr('УСТАНОВИТЬ')
 
 def run_wizard(settings,home):
     events=queue.Queue();cancel=threading.Event()
@@ -105,18 +106,18 @@ def run_wizard(settings,home):
                 data,reply=value
                 reply.put(False if cancel.is_set() else confirm_host(*data) if kind=='host' else confirm_plan(data))
             elif kind=='error':
-                thread.join();print('\nУстановка НЕ завершена: '+value);print('Состояние и приватные материалы: '+str(home/'sessions'));return 1
+                thread.join();print(tr('\nУстановка НЕ завершена: ')+value);print(tr('Состояние и приватные материалы: ')+str(home/'sessions'));return 1
             elif kind=='done':
-                thread.join();print('\nГОТОВО. Панель: '+value['url']+'/admin\nЛогин: owner')
-                print('Новый первый пароль и резервные копии: '+value['backup_directory'])
-                print('Откройте result-private.json в этой папке и смените первый пароль в панели.')
-                print('Не пересылайте приватную папку другим людям.')
-                try:show=yes('Показать первый пароль здесь (он останется в прокрутке терминала)?')
+                thread.join();print(tr('\nГОТОВО. Панель: ')+value['url']+tr('/admin\nЛогин: owner'))
+                print(tr('Новый первый пароль и резервные копии: ')+value['backup_directory'])
+                print(tr('Откройте result-private.json в этой папке и смените первый пароль в панели.'))
+                print(tr('Не пересылайте приватную папку другим людям.'))
+                try:show=yes(tr('Показать первый пароль здесь (он останется в прокрутке терминала)?'))
                 except (KeyboardInterrupt,EOFError):show=False
-                if show:print('Первый пароль: '+value['password'])
+                if show:print(tr('Первый пароль: ')+value['password'])
                 return 0
         except (KeyboardInterrupt,EOFError):
-            cancel.set();print('\nЗапрошена остановка. Дождитесь окончания текущего этапа и очистки только новой установки.',flush=True)
+            cancel.set();print(tr('\nЗапрошена остановка. Дождитесь окончания текущего этапа и очистки только новой установки.'),flush=True)
 
 def self_test():
     # No metadata lookups, SSH, terms acceptance, writes or network calls.
@@ -136,7 +137,9 @@ def main():
     parser.add_argument('--self-test',action='store_true',help='Offline embedded-resource check; no SSH or network')
     parser.add_argument('--check-sources',action='store_true',help='Read only public official release metadata; no SSH')
     parser.add_argument('--home',type=Path,help='Private local installer state directory')
+    parser.add_argument('--lang',choices=('auto','ru','en'),default='auto',help='Interface language')
     args=parser.parse_args()
+    set_language(args.lang)
     if args.self_test:self_test();return 0
     if args.check_sources:
         try:print(json.dumps(versions.discover(),indent=2));return 0
@@ -144,12 +147,12 @@ def main():
     import os
     home=args.home or Path(os.getenv('LOCALAPPDATA',str(Path.home()/'.local/share')))/'AmneziaDashboardInstaller'
     try:return run_wizard(collect(),home)
-    except (KeyboardInterrupt,EOFError):print('\nУстановка не начиналась.');return 1
+    except (KeyboardInterrupt,EOFError):print(tr('\nУстановка не начиналась.'));return 1
     except InstallError as error:print('\n'+str(error));return 1
 
 if __name__=='__main__':
     result=main()
     if getattr(sys,'frozen',False) and len(sys.argv)==1 and sys.stdin.isatty():
-        try:input('\nНажмите Enter, чтобы закрыть мастер…')
+        try:input(tr('\nНажмите Enter, чтобы закрыть мастер…'))
         except (KeyboardInterrupt,EOFError):pass
     raise SystemExit(result)

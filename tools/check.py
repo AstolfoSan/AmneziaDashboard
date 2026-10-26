@@ -32,7 +32,7 @@ if __name__=='__main__':
             if '://' in link or link.startswith('#'):continue
             destination=(path.parent/link.split('#',1)[0]).resolve()
             if not destination.is_relative_to(ROOT) or not destination.exists():raise SystemExit('Broken local documentation link: '+path.relative_to(ROOT).as_posix())
-    run([sys.executable,'-m','unittest','discover','-s','installer','-p','test_installer.py','-q'])
+    run([sys.executable,'-m','unittest','discover','-s','installer','-p','test_*.py','-q'])
     run([sys.executable,'installer/portable/run_checks.py','--node',node])
     run([sys.executable,'installer/cli.py','--self-test'])
     print(json.dumps({'version':version,'local_checks_passed':True,'fresh_vps_acceptance':False}))

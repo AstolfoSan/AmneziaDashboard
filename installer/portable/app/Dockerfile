@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssh-client 
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY panel.py downloads.py portable_settings.py .
+COPY panel.py downloads.py portable_settings.py api_i18n.py .
 COPY static ./static
 USER 10001:10001
 CMD ["gunicorn","--bind","0.0.0.0:8000","--workers","1","--threads","3","--timeout","45","--worker-tmp-dir","/tmp","--no-control-socket","--max-requests","10000","--max-requests-jitter","500","--error-logfile","-","panel:create_app()"]

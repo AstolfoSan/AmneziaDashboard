@@ -1,11 +1,12 @@
+var tr=value=>globalThis.DashboardI18n?globalThis.DashboardI18n.text(value):value;
 (function(root,factory){'use strict';const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.TrafficChart=api;})(typeof window==='undefined'?globalThis:window,function(){
   'use strict';
   const HOUR=3600,DAY=86400,ZONE='Europe/Moscow',PERIODS=[1,6,24,168,744];
-  const clock=new Intl.DateTimeFormat('ru-RU',{timeZone:ZONE,hour:'2-digit',minute:'2-digit'});
-  const day=new Intl.DateTimeFormat('ru-RU',{timeZone:ZONE,day:'2-digit',month:'2-digit'});
+  const clock=new Intl.DateTimeFormat((globalThis.DashboardI18n?.locale()||'ru-RU'),{timeZone:ZONE,hour:'2-digit',minute:'2-digit'});
+  const day=new Intl.DateTimeFormat((globalThis.DashboardI18n?.locale()||'ru-RU'),{timeZone:ZONE,day:'2-digit',month:'2-digit'});
   let rawRows=[],rawDaily=[],rawInfo={},period=6,model=null,active=null,selectedAt=null,pinnedAt=null,hovering=false,restoreFocus=null;
   function number(value){const n=Number(value);return Number.isFinite(n)&&n>=0?n:0;}
-  function bytes(value){const n=number(value);if(!n)return'0 Б';const k=Math.min(4,Math.floor(Math.log(n)/Math.log(1024)));return(n/1024**k).toLocaleString('ru-RU',{maximumFractionDigits:k?1:0})+' '+['Б','КБ','МБ','ГБ','ТБ'][k];}
+  function bytes(value){const n=number(value);if(!n)return tr('0 Б');const k=Math.min(4,Math.floor(Math.log(n)/Math.log(1024)));return(n/1024**k).toLocaleString((globalThis.DashboardI18n?.locale()||'ru-RU'),{maximumFractionDigits:k?1:0})+' '+[tr('Б'),tr('КБ'),tr('МБ'),tr('ГБ'),tr('ТБ')][k];}
   function time(value){return clock.format(new Date(value*1000));}
   function date(value){return day.format(new Date(value*1000));}
   function validPeriod(value){const n=Number(value);return PERIODS.includes(n)?n:6;}
@@ -50,26 +51,26 @@
     return '<rect '+attrs+' x="'+(x-1)+'" y="'+(base-h-1)+'" width="'+(width+2)+'" height="'+(h+2)+'" rx="2"/>';
   }
   function pick(clientX,box,g,count){const x=(clientX-box.left)/Math.max(1,box.width)*g.width;return Math.max(0,Math.min(count-1,Math.floor((x-g.left)/g.plotWidth*count)));}
-  function label(point){if(point.end-point.start===DAY)return date(point.start)+' · 00:00–24:00 МСК';const start=date(point.start)+' '+time(point.start),end=point.current&&point.end-point.start<60?'сейчас':(date(point.start)===date(point.end)?'':date(point.end)+' ')+time(point.end);return start+'–'+end+' МСК';}
+  function label(point){if(point.end-point.start===DAY)return date(point.start)+tr(' · 00:00–24:00 МСК');const start=date(point.start)+' '+time(point.start),end=point.current&&point.end-point.start<60?tr('сейчас'):(date(point.start)===date(point.end)?'':date(point.end)+' ')+time(point.end);return start+'–'+end+tr(' МСК');}
   function note(point,m){
-    if(!point.known)return m.observed===null||point.end<=m.observed?'За этот период данные ещё не накапливались':'Нет свежего замера за этот интервал';
-    if(point.current)return'Текущий интервал · данные ещё поступают';
-    return point.partial?(m.daily?'Неполный день наблюдения':'Неполный интервал'):m.daily?'Суточный итог':'Объём за '+Math.round(m.step/60)+' мин';
+    if(!point.known)return m.observed===null||point.end<=m.observed?tr('За этот период данные ещё не накапливались'):tr('Нет свежего замера за этот интервал');
+    if(point.current)return tr('Текущий интервал · данные ещё поступают');
+    return point.partial?(m.daily?tr('Неполный день наблюдения'):tr('Неполный интервал')):m.daily?tr('Суточный итог'):tr('Объём за ')+Math.round(m.step/60)+tr(' мин');
   }
-  function valuesMarkup(){return '<div class="traffic-values"><span class="traffic-down">↓ Скачано<strong data-selection="tx">—</strong></span><span class="traffic-up">↑ Отправлено<strong data-selection="rx">—</strong></span><span>Всего<strong data-selection="total">—</strong></span></div>';}
+  function valuesMarkup(){return tr('<div class="traffic-values"><span class="traffic-down">↓ Скачано<strong data-selection="tx">—</strong></span><span class="traffic-up">↑ Отправлено<strong data-selection="rx">—</strong></span><span>Всего<strong data-selection="total">—</strong></span></div>');}
   function contents(m){
-    const periodLabel=h=>h===168?'7 дней':h===744?'31 день':h===1?'1 час':h===24?'24 часа':'6 часов';
+    const periodLabel=h=>h===168?tr('7 дней'):h===744?tr('31 день'):h===1?tr('1 час'):h===24?tr('24 часа'):tr('6 часов');
     const buttons=PERIODS.map(h=>'<button type="button" class="small traffic-period" data-traffic-hours="'+h+'" aria-pressed="'+(h===m.hours)+'">'+periodLabel(h)+'</button>').join('');
-    const caption='Объём трафика · '+(m.daily?'столбцы по дням':'столбцы по '+Math.round(m.step/60)+' мин');
-    const range=m.daily?date(m.cutoff)+'–'+date(m.now-DAY)+' МСК. Сегодня не включено.':date(m.cutoff)+' '+time(m.cutoff)+' — '+date(m.now)+' '+time(m.now)+' МСК.';
-    const coverage=(m.daily?(m.hours===744?'Последний 31 завершённый день. ':'Последние 7 завершённых дней. '):m.hours===1?'Последний час. ':'Последние '+periodLabel(m.hours)+'. ')+range+
-      (m.limited?' Наблюдение началось '+date(m.observed)+' в '+time(m.observed)+' МСК; до этого данных нет.':'');
-    return '<figcaption class="traffic-toolbar"><span class="traffic-caption">'+caption+'</span><div class="traffic-periods" role="group" aria-label="Период графика">'+buttons+'</div></figcaption>'+
-      '<div class="traffic-summary"><span class="traffic-down">● Скачано<strong>'+(m.hasData?bytes(m.tx):'—')+'</strong></span><span class="traffic-up">● Отправлено<strong>'+(m.hasData?bytes(m.rx):'—')+'</strong></span><span>Всего за показанный период<strong>'+(m.hasData?bytes(m.rx+m.tx):'—')+'</strong></span></div>'+
-      '<p class="traffic-coverage">'+coverage+'</p><div class="traffic-stage"><svg class="traffic-svg" tabindex="0" role="img" aria-label="Объём трафика: скачано и отправлено. Стрелки выбирают интервал." aria-describedby="traffic-help"></svg>'+
+    const caption=tr('Объём трафика · ')+(m.daily?tr('столбцы по дням'):tr('столбцы по ')+Math.round(m.step/60)+tr(' мин'));
+    const range=m.daily?date(m.cutoff)+'–'+date(m.now-DAY)+tr(' МСК. Сегодня не включено.'):date(m.cutoff)+' '+time(m.cutoff)+' — '+date(m.now)+' '+time(m.now)+tr(' МСК.');
+    const coverage=(m.daily?(m.hours===744?tr('Последний 31 завершённый день. '):tr('Последние 7 завершённых дней. ')):m.hours===1?tr('Последний час. '):tr('Последние ')+periodLabel(m.hours)+'. ')+range+
+      (m.limited?tr(' Наблюдение началось ')+date(m.observed)+tr(' в ')+time(m.observed)+tr(' МСК; до этого данных нет.'):'');
+    return '<figcaption class="traffic-toolbar"><span class="traffic-caption">'+caption+tr('</span><div class="traffic-periods" role="group" aria-label="Период графика">')+buttons+'</div></figcaption>'+
+      tr('<div class="traffic-summary"><span class="traffic-down">● Скачано<strong>')+(m.hasData?bytes(m.tx):'—')+tr('</strong></span><span class="traffic-up">● Отправлено<strong>')+(m.hasData?bytes(m.rx):'—')+tr('</strong></span><span>Всего за показанный период<strong>')+(m.hasData?bytes(m.rx+m.tx):'—')+'</strong></span></div>'+
+      '<p class="traffic-coverage">'+coverage+tr('</p><div class="traffic-stage"><svg class="traffic-svg" tabindex="0" role="img" aria-label="Объём трафика: скачано и отправлено. Стрелки выбирают интервал." aria-describedby="traffic-help"></svg>')+
       '<div class="traffic-tooltip" hidden><strong data-selection="time"></strong>'+valuesMarkup()+'<small data-selection="note"></small></div></div>'+
       '<div class="traffic-readout" role="status" aria-live="polite" aria-atomic="true"><strong data-selection="time"></strong>'+valuesMarkup()+'<small data-selection="note"></small></div>'+
-      '<p class="help" id="traffic-help">Наведите мышь или нажмите на столбец. С клавиатуры — стрелки, Home и End; Escape сбрасывает выбор. Время МСК. Это объём трафика, не скорость.</p>';
+      tr('<p class="help" id="traffic-help">Наведите мышь или нажмите на столбец. С клавиатуры — стрелки, Home и End; Escape сбрасывает выбор. Время МСК. Это объём трафика, не скорость.</p>');
   }
   function html(rows,info,dailyRows){rawRows=rows||[];rawDaily=dailyRows||[];rawInfo=info||{};model=build(rawRows,rawInfo,period,rawDaily);return '<figure class="traffic-chart" data-traffic-chart>'+contents(model)+'</figure>';}
   function destroy(reset=false){
@@ -94,7 +95,7 @@
       index=i;lastPopup=popup;const p=m.points[i];selectedAt=p.at;
       const text={time:label(p),note:note(p,m),tx:p.known?bytes(p.tx):'—',rx:p.known?bytes(p.rx):'—',total:p.known?bytes(p.total):'—'};
       for(const [key,value] of Object.entries(text))root.querySelectorAll('[data-selection="'+key+'"]').forEach(el=>{el.textContent=value;});
-      svg.setAttribute('aria-label',text.time+'. Скачано '+text.tx+', отправлено '+text.rx+', всего '+text.total+'. '+text.note);
+      svg.setAttribute('aria-label',text.time+tr('. Скачано ')+text.tx+tr(', отправлено ')+text.rx+tr(', всего ')+text.total+'. '+text.note);
       tip.hidden=!popup;tip.classList.toggle('align-left',i>=m.points.length/2);
       svg.querySelectorAll('.traffic-bar-hit').forEach((el,j)=>el.classList.toggle('is-selected',j===i));
       svg.querySelectorAll('.traffic-bar-selection').forEach((el,j)=>el.classList.toggle('is-selected',j===i));
@@ -102,7 +103,7 @@
     function draw(){
       if(active?.root!==root)return;
       const next=Math.round(root.clientWidth);if(next===width&&g)return;width=next;g=geometry(next);svg.setAttribute('viewBox','0 0 '+g.width+' '+g.height);
-      let out='<title>Объём трафика по интервалам. Оранжевый — скачано, голубой — отправлено; высота столбца — сумма.</title>';
+      let out=tr('<title>Объём трафика по интервалам. Оранжевый — скачано, голубой — отправлено; высота столбца — сумма.</title>');
       for(const tick of s.ticks){const y=g.top+g.plotHeight-tick/s.top*g.plotHeight;out+='<line class="traffic-gridline" x1="'+g.left+'" x2="'+(g.width-g.right)+'" y1="'+y+'" y2="'+y+'"/><text class="traffic-axis-text" text-anchor="end" x="'+(g.left-9)+'" y="'+(y+4)+'">'+bytes(tick)+'</text>';}
       const n=m.points.length,slot=g.plotWidth/n,bar=Math.max(2,Math.min(40,slot*.66));
       const marks=[...new Set((g.width<520?[0,.5,1]:[0,.25,.5,.75,1]).map(f=>Math.round(f*(n-1))))];
@@ -119,7 +120,7 @@
         out+=selectionMarkup(x,bar,base,p.known?p.total/s.top*g.plotHeight:0);
         out+='<rect class="traffic-bar-hit" x="'+(g.left+i*slot+1)+'" y="'+g.top+'" width="'+Math.max(1,slot-2)+'" height="'+g.plotHeight+'" rx="3"/>';
       });
-      if(!m.hasData)out+='<text class="traffic-axis-text" text-anchor="middle" x="'+(g.left+g.plotWidth/2)+'" y="110">Нет данных за этот период</text>';
+      if(!m.hasData)out+='<text class="traffic-axis-text" text-anchor="middle" x="'+(g.left+g.plotWidth/2)+tr('" y="110">Нет данных за этот период</text>');
       svg.innerHTML=out;let i=indexOf(selectedAt);if(i<0)i=latest();show(i,hovering||pinnedAt!==null,true);
     }
     root.querySelectorAll('[data-traffic-hours]').forEach(button=>{

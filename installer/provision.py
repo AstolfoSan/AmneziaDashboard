@@ -1,4 +1,5 @@
 """Two-node installation state machine; every READY result requires live checks."""
+from i18n import tr
 import base64
 import hashlib
 import importlib.util
@@ -53,13 +54,13 @@ def read_inventory(remote):
             'python_present':bool(exists(remote,'/usr/bin/python3'))}
 
 def validate_inventory(info,settings,node):
-    if info['uid']!=0 or info['os']!='ubuntu' or info['version']!='24.04':raise InstallError('Поддерживаются новые VPS Ubuntu 24.04 с доступом root')
-    if info['architecture'] not in {'amd64','arm64'}:raise InstallError('Поддерживаются amd64 и arm64')
-    if info['available_mib']<480 or info['free_disk_gib']<3:raise InstallError('Нужно минимум около 1 ГБ RAM и 3 ГБ свободного диска')
-    if not info['tun']:raise InstallError('На VPS нет /dev/net/tun. Включите TUN в панели хостинга')
-    if info['existing_paths'] or info['existing_containers']:raise InstallError('Найдена существующая VPN/Docker-установка. Автоматическая перезапись запрещена')
-    if any(r.get('priority') not in {0,32766,32767} for r in info['rules']):raise InstallError('На VPS уже есть policy-routing. Нужна ручная проверка')
-    if any(link.get('linkinfo',{}).get('info_kind') in {'tun','wireguard','amneziawg'} for link in info['links']):raise InstallError('На VPS уже есть VPN-интерфейсы')
+    if info['uid']!=0 or info['os']!='ubuntu' or info['version']!='24.04':raise InstallError(tr('Поддерживаются новые VPS Ubuntu 24.04 с доступом root'))
+    if info['architecture'] not in {'amd64','arm64'}:raise InstallError(tr('Поддерживаются amd64 и arm64'))
+    if info['available_mib']<480 or info['free_disk_gib']<3:raise InstallError(tr('Нужно минимум около 1 ГБ RAM и 3 ГБ свободного диска'))
+    if not info['tun']:raise InstallError(tr('На VPS нет /dev/net/tun. Включите TUN в панели хостинга'))
+    if info['existing_paths'] or info['existing_containers']:raise InstallError(tr('Найдена существующая VPN/Docker-установка. Автоматическая перезапись запрещена'))
+    if any(r.get('priority') not in {0,32766,32767} for r in info['rules']):raise InstallError(tr('На VPS уже есть policy-routing. Нужна ручная проверка'))
+    if any(link.get('linkinfo',{}).get('info_kind') in {'tun','wireguard','amneziawg'} for link in info['links']):raise InstallError(tr('На VPS уже есть VPN-интерфейсы'))
     needed={(settings.vpn_port,'udp')} if node=='entry' or settings.mode=='direct' else {(settings.relay_port,'tcp')}
     if node=='foreign':needed|={(80,'tcp'),(settings.panel_port,'tcp')}
     for line in info['listeners'].splitlines():
@@ -67,7 +68,7 @@ def validate_inventory(info,settings,node):
         if len(fields)>4:
             try:number=int(fields[4].rsplit(':',1)[1])
             except ValueError:continue
-            if (number,fields[0]) in needed:raise InstallError('Нужный порт уже занят: '+str(number)+'/'+fields[0])
+            if (number,fields[0]) in needed:raise InstallError(tr('Нужный порт уже занят: ')+str(number)+'/'+fields[0])
 
 def networks(inventories):
     occupied=[]
@@ -83,7 +84,7 @@ def networks(inventories):
                               (24,['10.241.'+str(n)+'.0/24' for n in range(32)] + ['192.168.'+str(n)+'.0/24' for n in range(200,240)]),
                               (30,['10.242.'+str(n)+'.0/30' for n in range(32)] + ['192.168.'+str(n)+'.0/30' for n in range(150,190)])]:
         choice=next((ipaddress.IPv4Network(value) for value in candidates if not any(ipaddress.IPv4Network(value).overlaps(n) for n in occupied+selected)),None)
-        if choice is None:raise InstallError('Не удалось подобрать свободные подсети без изменения существующих маршрутов')
+        if choice is None:raise InstallError(tr('Не удалось подобрать свободные подсети без изменения существующих маршрутов'))
         selected.append(choice)
     return dict(zip(('panel','vpn','clients','outer'),map(str,selected)))
 
@@ -133,7 +134,7 @@ class Runner:
         self.session=self.home/'sessions'/self.run_id;self.remotes={};self.created=False;self.probe_started=False;self.test_id=None
     def log(self,message):self.status(message)
     def checkpoint(self):
-        if self.cancel.is_set():raise InstallError('Остановлено между этапами. Созданные данные сохранены, чужие службы не затронуты')
+        if self.cancel.is_set():raise InstallError(tr('Остановлено между этапами. Созданные данные сохранены, чужие службы не затронуты'))
     def mkdir(self,remote,path,mode=0o700):
         remote.run(['mkdir','-p',path]);remote.sftp.chmod(path,mode)
     def put(self,remote,path,value,public=False):
@@ -148,9 +149,9 @@ class Runner:
     def action(self,node,action,timeout=2400,cleanup=False):
         if not cleanup:self.checkpoint()
         try:raw=self.remotes[node].run(['python3',self.work+'/node_install.py',self.work,action],timeout=timeout)
-        except Exception as error:raise InstallError('Не завершён этап '+action+' ('+node+'). Приватный журнал на VPS: '+self.work+'/install.log') from error
+        except Exception as error:raise InstallError(tr('Не завершён этап ')+action+' ('+node+tr('). Приватный журнал на VPS: ')+self.work+'/install.log') from error
         result=json.loads(raw)
-        if result.get('error'):raise InstallError('Этап '+action+' не завершён; приватный журнал: '+self.work+'/install.log')
+        if result.get('error'):raise InstallError(tr('Этап ')+action+tr(' не завершён; приватный журнал: ')+self.work+'/install.log')
         journal=self.session/'stages.jsonl'
         with journal.open('a',encoding='utf-8') as stream:stream.write(json.dumps({'node':node,'stage':action,'ok':True})+'\n')
         journal.chmod(0o600)
@@ -172,19 +173,19 @@ class Runner:
             result={'archive':archive,'bytes':remote.sftp.stat(archive).st_size,'sha256':remote.run(['sha256sum',archive]).decode().split()[0]}
         path=self.session/(node+('-after-private.tar.gz' if after else '-before-private.tar.gz'))
         expected=self.work+('/after-install-private.tar.gz' if after else '/before-install.tar.gz')
-        if result['archive']!=expected or not 0<result['bytes']<=256*1024**2:raise InstallError('Непредвиденный путь или размер резервной копии')
+        if result['archive']!=expected or not 0<result['bytes']<=256*1024**2:raise InstallError(tr('Непредвиденный путь или размер резервной копии'))
         self.remotes[node].get(result['archive'],path)
-        if hashlib.sha256(path.read_bytes()).hexdigest()!=result['sha256']:raise InstallError('Контрольная сумма резервной копии не совпала')
+        if hashlib.sha256(path.read_bytes()).hexdigest()!=result['sha256']:raise InstallError(tr('Контрольная сумма резервной копии не совпала'))
     def agent(self,payload):
         target='entry' if self.settings.mode=='cascade' else 'foreign'
         raw=self.remotes[target].run(['/usr/bin/env','-i','PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
             'DOCKER_HOST=unix:///var/run/docker.sock','AMNEZIA_AGENT_CONFIG=/etc/amnezia-dashboard/agent.json',
             '/opt/amnezia-dashboard-agent/venv/bin/python','-E','-s','/opt/amnezia-dashboard-agent/agent.py'],input_data=(json.dumps(payload)+'\n').encode())
         reply=json.loads(raw)
-        if not reply.get('ok'):raise InstallError('VPN-агент не подтвердил операцию')
+        if not reply.get('ok'):raise InstallError(tr('VPN-агент не подтвердил операцию'))
         return reply['result']
     def tests(self,expected,net):
-        self.log('Проверка нового тестового VPN-клиента и реального HTTPS-трафика…')
+        self.log(tr('Проверка нового тестового VPN-клиента и реального HTTPS-трафика…'))
         self.test_id=str(uuid.uuid4());self.agent({'action':'create','id':self.test_id,'name':'Installer disposable self-test'})
         value=self.agent({'action':'export','id':self.test_id})['vpn'];encoded=value[6:]
         raw=base64.urlsafe_b64decode(encoded+'='*(-len(encoded)%4))
@@ -200,48 +201,48 @@ class Runner:
         for attempt in range(3):
             try:
                 if self.action('foreign','probe-ip')['ip']==expected:break
-                raise InstallError('Получен неожиданный выходной IP')
+                raise InstallError(tr('Получен неожиданный выходной IP'))
             except Exception:
                 if attempt==2:raise
                 time.sleep(3)
         if self.settings.mode=='cascade':
-            self.log('Проверка fail-closed: без зарубежного туннеля RU не должен выпускать трафик…')
+            self.log(tr('Проверка fail-closed: без зарубежного туннеля RU не должен выпускать трафик…'))
             self.action('entry','link-down')
             try:
-                if not self.action('foreign','probe-blocked').get('blocked'):raise InstallError('Fail-closed проверка не пройдена')
+                if not self.action('foreign','probe-blocked').get('blocked'):raise InstallError(tr('Fail-closed проверка не пройдена'))
             finally:self.action('entry','link-up',cleanup=True)
             time.sleep(3)
-            if self.action('foreign','probe-ip')['ip']!=expected:raise InstallError('Каскад не восстановился после fail-closed теста')
+            if self.action('foreign','probe-ip')['ip']!=expected:raise InstallError(tr('Каскад не восстановился после fail-closed теста'))
         self.agent({'action':'access','id':self.test_id,'paused':True})
-        if not self.action('foreign','probe-blocked').get('blocked'):raise InstallError('Приостановка тестового клиента не сработала')
+        if not self.action('foreign','probe-blocked').get('blocked'):raise InstallError(tr('Приостановка тестового клиента не сработала'))
         self.agent({'action':'access','id':self.test_id,'paused':False})
-        if self.agent({'action':'export','id':self.test_id})['vpn']!=value:raise InstallError('Тестовый профиль изменился при снятии паузы')
+        if self.agent({'action':'export','id':self.test_id})['vpn']!=value:raise InstallError(tr('Тестовый профиль изменился при снятии паузы'))
         self.action('foreign','probe-reconnect')
-        if self.action('foreign','probe-ip')['ip']!=expected:raise InstallError('Клиент не восстановился после паузы')
-        self.log('Проверка автоматического окончания доступа локальным таймером…')
+        if self.action('foreign','probe-ip')['ip']!=expected:raise InstallError(tr('Клиент не восстановился после паузы'))
+        self.log(tr('Проверка автоматического окончания доступа локальным таймером…'))
         self.agent({'action':'access','id':self.test_id,'expires_at':int(time.time())+3})
         time.sleep(22)
-        if not self.action('foreign','probe-blocked').get('blocked'):raise InstallError('Таймер окончания доступа не сработал')
+        if not self.action('foreign','probe-blocked').get('blocked'):raise InstallError(tr('Таймер окончания доступа не сработал'))
         self.agent({'action':'access','id':self.test_id,'expires_at':None})
         self.action('foreign','probe-reconnect')
-        if self.agent({'action':'export','id':self.test_id})['vpn']!=value:raise InstallError('Профиль изменился при продлении')
-        if self.action('foreign','probe-ip')['ip']!=expected:raise InstallError('Не восстановлен доступ после продления')
+        if self.agent({'action':'export','id':self.test_id})['vpn']!=value:raise InstallError(tr('Профиль изменился при продлении'))
+        if self.action('foreign','probe-ip')['ip']!=expected:raise InstallError(tr('Не восстановлен доступ после продления'))
         self.agent({'action':'revoke','id':self.test_id});self.test_id=None
         self.action('foreign','probe-stop');self.probe_started=False
     def run(self):
         self.session.mkdir(parents=True,mode=0o700)
         try:
-            self.log('Проверка последних стабильных релизов официальных источников…');lock=self.resolver()
-            self.log('AmneziaVPN '+lock['amnezia_client']['tag']+'; серверный образ закреплён по digest')
+            self.log(tr('Проверка последних стабильных релизов официальных источников…'));lock=self.resolver()
+            self.log('AmneziaVPN '+lock['amnezia_client']['tag']+tr('; серверный образ закреплён по digest'))
             inventory={}
             for name,login in [('foreign',self.settings.foreign)]+([('entry',self.settings.entry)] if self.settings.mode=='cascade' else []):
-                self.checkpoint();self.log('Проверка SSH и чистоты '+('зарубежного' if name=='foreign' else 'RU')+' VPS…')
+                self.checkpoint();self.log(tr('Проверка SSH и чистоты ')+(tr('зарубежного') if name=='foreign' else 'RU')+' VPS…')
                 remote=self.remote_class(login,self.home/'known_hosts',self.approve_host).connect();self.remotes[name]=remote
                 info=read_inventory(remote);validate_inventory(info,self.settings,name);inventory[name]=info
                 required=('awg','alpine','python','nginx') if name=='foreign' else ('awg','alpine')
-                if any(info['architecture'] not in lock[key]['platforms'] for key in required):raise InstallError('Официальные образы недоступны для архитектуры VPS')
+                if any(info['architecture'] not in lock[key]['platforms'] for key in required):raise InstallError(tr('Официальные образы недоступны для архитектуры VPS'))
             net=networks(inventory.values());plan={**self.settings.public_plan(),'versions':lock,'networks':net}
-            if not self.approve_plan(plan):raise InstallError('Установка не подтверждена')
+            if not self.approve_plan(plan):raise InstallError(tr('Установка не подтверждена'))
             (self.session/'plan.json').write_text(json.dumps(plan,ensure_ascii=False,indent=2),encoding='utf-8')
             self.plan=plan;self.specs={}
             vpn_ip=str(ipaddress.IPv4Network(net['vpn']).network_address+2)
@@ -257,32 +258,32 @@ class Runner:
                 self.specs[name]=spec;self.mkdir(remote,self.work)
                 self.put(remote,self.work+'/node_install.py',(ROOT/'node_install.py').read_bytes(),True)
                 self.put(remote,self.work+'/node-spec.json',json.dumps(spec))
-            self.log('Создание и проверка резервных копий до установки…')
+            self.log(tr('Создание и проверка резервных копий до установки…'))
             for name in self.remotes:self.backup(name)
             self.created=True;outside={}
             for name in self.remotes:
                 if not inventory[name]['python_present']:
-                    self.log('Установка Python после резервного копирования: '+name+'…')
+                    self.log(tr('Установка Python после резервного копирования: ')+name+'…')
                     self.remotes[name].run(['env','DEBIAN_FRONTEND=noninteractive','apt-get','update','-qq'],timeout=1200)
                     self.remotes[name].run(['env','DEBIAN_FRONTEND=noninteractive','apt-get','install','-y','--no-install-recommends','python3'],timeout=1200)
-                self.log('Установка Docker и необходимых пакетов: '+name+'…');outside[name]=self.action(name,'prepare')['outside_ip']
+                self.log(tr('Установка Docker и необходимых пакетов: ')+name+'…');outside[name]=self.action(name,'prepare')['outside_ip']
             for name,remote in self.remotes.items():
                 self.put(remote,self.work+'/vpn-image/Dockerfile',dockerfile(lock),True)
                 for filename in ('vpn_runtime.py','relay.py'):self.put(remote,self.work+'/vpn-image/'+filename,(ROOT/filename).read_bytes(),True)
-                self.log('Сборка актуального AmneziaWG на '+name+'…');self.action(name,'build')
+                self.log(tr('Сборка актуального AmneziaWG на ')+name+'…');self.action(name,'build')
             self.configure_nodes(net,outside)
             if self.settings.mode=='cascade':self.action('foreign','firewall');self.action('foreign','vpn-up')
             entry='entry' if self.settings.mode=='cascade' else 'foreign'
             self.action(entry,'firewall');self.action(entry,'vpn-up');self.action(entry,'agent')
             self.tests(outside['foreign'],net)
-            self.log('Автоматический HTTPS по IP и запуск панели на зарубежном VPS…')
+            self.log(tr('Автоматический HTTPS по IP и запуск панели на зарубежном VPS…'))
             self.action('foreign','panel')
             result=self.finish_panel(plan['panel_url'])
-            self.log('Итоговые приватные резервные копии и проверки таймеров…')
+            self.log(tr('Итоговые приватные резервные копии и проверки таймеров…'))
             for name in self.remotes:self.action(name,'check-timers');self.backup(name,True)
             private={'url':plan['panel_url'],'username':'owner','password':result,'run_id':self.run_id,'mode':self.settings.mode,'backup_directory':str(self.session)}
             target=self.session/'result-private.json';target.write_text(json.dumps(private,ensure_ascii=False,indent=2),encoding='utf-8');target.chmod(0o600)
-            self.log('Установка завершена. Тестовый клиент удалён; панель готова к выдаче профилей.')
+            self.log(tr('Установка завершена. Тестовый клиент удалён; панель готова к выдаче профилей.'))
             return private
         except Exception:
             if self.test_id:
@@ -304,7 +305,7 @@ class Runner:
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
         same=self.settings.mode=='direct';entry='foreign' if same else 'entry';entry_remote=self.remotes[entry]
         config={'mode':self.settings.mode,'public_origin':self.plan['panel_url'],'panel_bind_ip':'0.0.0.0','publish_http_challenge':True,
-                'panel_network_cidr':net['panel'],'route_label':'Зарубежный VPS' if same else 'RU → Зарубежный VPS',
+                'panel_network_cidr':net['panel'],'route_label':tr('Зарубежный VPS') if same else tr('RU → Зарубежный VPS'),
                 'agent':{'same_host':same,'ssh_host':'host.docker.internal' if same else self.settings.entry.host,
                          'ssh_port':self.settings.entrance.port,'ssh_user':'root',**({} if same else {'source_cidr':outside['foreign']+'/32'})},
                 'vpn':{'public_host':self.settings.entrance.host,'container':'amnezia-dashboard-vpn','interface':'awg0','state_dir':'/var/lib/amnezia-dashboard-agent'},
@@ -355,13 +356,13 @@ class Runner:
             with opener.open(request,timeout=30) as response:return json.load(response)
         try:api('/api/dashboard')
         except urllib.error.HTTPError as error:
-            if error.code!=401:raise InstallError('Неожиданный ответ проверки авторизации панели')
-        else:raise InstallError('Панель открыла данные без авторизации')
+            if error.code!=401:raise InstallError(tr('Неожиданный ответ проверки авторизации панели'))
+        else:raise InstallError(tr('Панель открыла данные без авторизации'))
         api('/api/login',{'username':'owner','password':password});csrf=api('/api/session')['csrf']
-        api('/api/groups',{'name':'Мои устройства','limit':100},csrf)
+        api('/api/groups',{'name':tr('Мои устройства'),'limit':100},csrf)
         for _ in range(25):
             data=api('/api/dashboard');meta=data['meta']
             if not meta.get('sync_error') and time.time()-int(meta.get('last_sync',0))<60:break
             time.sleep(2)
-        else:raise InstallError('Панель не видит VPN-агент')
+        else:raise InstallError(tr('Панель не видит VPN-агент'))
         return password
