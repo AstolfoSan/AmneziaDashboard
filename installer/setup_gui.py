@@ -58,7 +58,8 @@ class NodeFields:
 class App:
     def __init__(self,lang='auto',demo=False,mode='direct'):
         set_language(lang);self.demo=demo;self.running=False;self.client_busy=False
-        self.root=tk.Tk();self.root.geometry('1040x790');self.root.minsize(980,760);self.root.configure(bg='#141414')
+        self.root=tk.Tk();width=min(1040,self.root.winfo_screenwidth()-60);height=min(790,self.root.winfo_screenheight()-70)
+        self.root.geometry(str(width)+'x'+str(height));self.root.minsize(min(980,width),min(650,height));self.root.configure(bg='#141414')
         self.mode=tk.StringVar(self.root,value=mode);self.lang=tk.StringVar(self.root,value='English' if language()=='en' else 'Русский')
         self.foreign=NodeFields(self.root,'203.0.113.20' if demo else '');self.entry=NodeFields(self.root,'203.0.113.10' if demo else '')
         self.vpn_port=tk.StringVar(self.root,value='39265');self.panel_port=tk.StringVar(self.root,value='10443');self.relay_port=tk.StringVar(self.root,value='443')
@@ -66,6 +67,7 @@ class App:
         self.events=queue.Queue();self.cancel=threading.Event()
         self.home=Path(os.getenv('LOCALAPPDATA',str(Path.home()/'.local/share')))/'AmneziaDashboardInstaller'
         self.style();self.render();self.root.protocol('WM_DELETE_WINDOW',self.close);self.root.after(100,self.poll)
+        self.root.bind('<MouseWheel>',self.scroll_form)
 
     def style(self):
         style=ttk.Style();style.theme_use('clam')
@@ -80,6 +82,8 @@ class App:
         style.configure('Muted.TLabel',foreground='#bcbcbc',font=('Segoe UI',9))
         style.configure('TNotebook',background='#141414');style.configure('TNotebook.Tab',padding=(12,7))
         style.map('TNotebook.Tab',background=[('selected','#303030')],foreground=[('selected','#F6A453')])
+        for kind in ('TRadiobutton','TCheckbutton'):
+            style.map(kind,background=[('active','#242424')],foreground=[('active','#f2f2f2')])
 
     def render(self):
         if self.running or self.client_busy:return
@@ -90,12 +94,19 @@ class App:
         ttk.Label(top,text='AmneziaDashboard',font=('Segoe UI',23,'bold')).pack(side='left')
         self.langbox=ttk.Combobox(top,textvariable=self.lang,values=['Русский','English'],state='readonly',width=10)
         self.langbox.pack(side='right');self.langbox.bind('<<ComboboxSelected>>',self.change_language)
-        subtitle=t('Установка 1.1.0 · только новые Ubuntu 24.04 VPS','Setup 1.1.0 · fresh Ubuntu 24.04 VPSs only')
+        subtitle=t('Установка ','Setup ')+VERSION+t(' · только новые Ubuntu 24.04 VPS',' · fresh Ubuntu 24.04 VPSs only')
         if self.demo:subtitle=t('ДЕМОНСТРАЦИЯ · пример адресов · установка и загрузка отключены','DEMO · example addresses · installation and downloads disabled')
         ttk.Label(container,text=subtitle,foreground='#9B8BC1').pack(anchor='w',pady=(4,12))
         self.tabs=ttk.Notebook(container);self.tabs.pack(fill='both',expand=True)
-        form=ttk.Frame(self.tabs,padding=14);progress=ttk.Frame(self.tabs,padding=14)
-        self.tabs.add(form,text=t('1. Подключение и настройки','1. Connection and settings'));self.tabs.add(progress,text=t('2. Ход установки','2. Installation progress'))
+        viewport=ttk.Frame(self.tabs);progress=ttk.Frame(self.tabs,padding=14)
+        self.tabs.add(viewport,text=t('1. Подключение и настройки','1. Connection and settings'));self.tabs.add(progress,text=t('2. Ход установки','2. Installation progress'))
+        self.form_canvas=tk.Canvas(viewport,bg='#141414',highlightthickness=0)
+        scrollbar=ttk.Scrollbar(viewport,orient='vertical',command=self.form_canvas.yview)
+        scrollbar.pack(side='right',fill='y');self.form_canvas.pack(side='left',fill='both',expand=True)
+        self.form_canvas.configure(yscrollcommand=scrollbar.set)
+        form=ttk.Frame(self.form_canvas,padding=14);form_id=self.form_canvas.create_window((0,0),window=form,anchor='nw')
+        form.bind('<Configure>',lambda event:self.form_canvas.configure(scrollregion=self.form_canvas.bbox('all')))
+        self.form_canvas.bind('<Configure>',lambda event:self.form_canvas.itemconfigure(form_id,width=event.width))
         ttk.Label(form,text=t('От 1 ГБ RAM, 3 ГБ свободного места и /dev/net/tun. Существующий VPN не перезаписывается.',
                              'At least 1 GB RAM, 3 GB free disk and /dev/net/tun. Existing VPNs are never overwritten.'),style='Muted.TLabel').pack(anchor='w')
         modes=ttk.Frame(form);modes.pack(fill='x',pady=12)
@@ -131,6 +142,10 @@ class App:
     def change_language(self,event=None):
         if self.running or self.client_busy:return
         set_language('en' if self.lang.get()=='English' else 'ru');self.render()
+
+    def scroll_form(self,event):
+        if self.tabs.select()==self.tabs.tabs()[0] and not isinstance(event.widget,ttk.Combobox):
+            self.form_canvas.yview_scroll(-int(event.delta/120),'units')
 
     def busy(self,value):
         self.langbox.configure(state='disabled' if value else 'readonly')
@@ -176,8 +191,13 @@ class App:
                         text=t('Сервер: ','Server: ')+data[0]+'\n\nSHA-256: '+data[1]+t('\n\nСверьте отпечаток в консоли хостинга. Подтвердить?','\n\nCompare this fingerprint in the hosting console. Trust this server?')
                     else:
                         title=t('Подтвердите план','Approve installation plan')
-                        text=json.dumps(data,ensure_ascii=False,indent=2)+t('\n\nБудут установлены Docker, AmneziaWG и панель, настроены порты и автопродление TLS. Сначала — резервные копии. Начать изменения?',
-                            '\n\nInstall Docker, AmneziaWG and dashboard, configure ports and TLS renewal. Backups come first. Begin changes?')
+                        text=(t('Режим: ','Mode: ')+(t('Каскад','Cascade') if data['mode']=='cascade' else t('Прямой VPN','Direct VPN'))+
+                              t('\nVPN-вход: ','\nVPN entry: ')+data['entry_ip']+' · UDP '+str(data['vpn_udp_port'])+
+                              t('\nЗарубежный сервер: ','\nForeign server: ')+data['foreign_ip']+
+                              t('\nПанель: ','\nDashboard: ')+data['panel_url']+
+                              t('\nПоследний стабильный клиент: ','\nLatest stable client: ')+data['versions']['amnezia_client']['tag']+
+                              t('\n\nСначала — проверенные резервные копии всех выбранных VPS.\nЗатем — Docker, AmneziaWG, панель, новые ключи, правила её портов и автопродление TLS.\n\nСуществующий VPN не перезаписывается. Начать изменения?',
+                                '\n\nFirst: verified backups of all selected VPSs.\nThen: Docker, AmneziaWG, dashboard, new keys, scoped port rules and TLS renewal.\n\nExisting VPNs are not overwritten. Begin changes?'))
                     reply.put(messagebox.askyesno(title,text,default='no'))
                 elif kind in {'done','error'}:
                     self.running=False;self.busy(False)
