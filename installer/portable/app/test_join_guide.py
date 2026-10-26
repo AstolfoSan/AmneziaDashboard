@@ -14,6 +14,33 @@ IMAGES={'amnezia-add-key.png':'b832bb8bda0b9be8604424e1702991378804ff85b7dd9435a
 
 
 class ImportGuideTests(unittest.TestCase):
+    def test_profile_controls_live_inside_numbered_step_two(self):
+        class Structure(HTMLParser):
+            def __init__(self):super().__init__();self.stack=[];self.controls={};self.steps=[]
+            def handle_starttag(self,tag,attrs):
+                values=dict(attrs);identifier=values.get('id')
+                if tag=='li' and identifier:self.steps.append(identifier)
+                if identifier:
+                    self.controls[identifier]=[a.get('id') for name,a in self.stack if name=='li']
+                if tag not in {'img','input','br','meta','link','hr','source','wbr'}:self.stack.append((tag,values))
+            def handle_endtag(self,tag):
+                for index in range(len(self.stack)-1,-1,-1):
+                    if self.stack[index][0]==tag:self.stack=self.stack[:index];break
+        html=(ROOT/'join.html').read_text(encoding='utf-8');tree=Structure();tree.feed(html)
+        self.assertEqual(tree.steps,['step-install','step-profile','step-import'])
+        for identifier in ('request-view','ready-view','join-form','join-title','join-error','get-profile','import-app','download','copy'):
+            self.assertEqual(tree.controls[identifier],['step-profile'],identifier)
+            self.assertEqual(html.count('id="'+identifier+'"'),1)
+        self.assertLess(html.index('id="join-form"'),html.index('id="step-import"'))
+
+    def test_personal_guide_has_no_marketing_hero(self):
+        html=(ROOT/'join.html').read_text(encoding='utf-8');css=(ROOT/'style.css').read_text(encoding='utf-8')
+        for slogan in ('Ваш интернет.','Без лишних сложностей.','Несколько простых шагов'):
+            self.assertNotIn(slogan,html)
+        self.assertIn('<h1 class="join-page-title">Подключение к VPN</h1>',html)
+        self.assertNotIn('class="join-layout"',html)
+        self.assertIn('.join .join-page-title{font-size:28px',css)
+
     def test_original_screenshots_in_click_order_with_accessible_dimensions(self):
         class Images(HTMLParser):
             def __init__(self):super().__init__();self.images=[]

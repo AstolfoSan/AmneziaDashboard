@@ -1,5 +1,6 @@
 'use strict';
 globalThis.DashboardEnglish={
+  'Подключение к VPN':'Connect to VPN',
   'Для вашего устройства: ':'For your device: ','Выберите приложение для вашего устройства.':'Choose the app for your device.','Другое устройство':'Another device','Скачайте приложение для своего устройства. Остальные варианты доступны в разделе «Другое устройство».':'Download the app for your device. Other options are under Another device.',
   '32 бит':'32-bit','универсальный':'universal',
   'До ':'Until ','Будет создан отдельный гостевой профиль ':'A separate guest profile will be created for ','. Файл можно скачать в строке устройства.':'. Download the file from the device row.',

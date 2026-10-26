@@ -35,6 +35,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200);self.send_header('Content-Type',mime);self.send_header('Cache-Control','no-store');self.end_headers();self.wfile.write(payload)
     def do_GET(self):
         path=urlsplit(self.path).path
+        if path=='/preview/mobile':
+            return self.send(b'<!doctype html><html><head><meta charset="utf-8"><title>Mobile invitation preview</title></head><body style="margin:0;background:#141414"><iframe title="Mobile invitation, 390 pixels" src="/j/demo" width="390" height="2300" style="display:block;border:0;max-width:100%"></iframe></body></html>','text/html; charset=utf-8')
         if path=='/api/session':return self.send({'id':1,'username':'owner','role':'super','csrf':'DEMO_NOT_A_CREDENTIAL'})
         if path=='/api/dashboard':return self.send(dashboard())
         if path=='/api/users':return self.send({'users':[{'id':1,'username':'owner','role':'super','enabled':True,'max_devices':150},{'id':2,'username':'demo-admin','role':'admin','enabled':True,'max_devices':25}]})
