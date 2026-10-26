@@ -12,7 +12,7 @@
   "windows_x64_ci_build": "PENDING_1_2_0",
   "windows_frozen_offline_self_test": "PENDING_1_2_0",
   "windows_gui_languages_modes_demo": "PASSED_NATIVE_CAPTURE_INTERACTION_AND_LOCAL_TK_TESTS",
-  "windows_rendering_profile": "LOCAL_DEMO_LAYOUT_2_729S_TO_0_0922S_NOT_COLD_EXE_LAUNCH",
+  "windows_rendering_profile": "LOCAL_DEMO_LAYOUT_2_729S_TO_0_0744S_NOT_COLD_EXE_LAUNCH",
   "web_languages_and_invitation_synthetic_preview": "PASSED",
   "documentation_screenshots_synthetic_only": 12,
   "windows_exe_code_signed": false,

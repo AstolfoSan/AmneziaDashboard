@@ -7,7 +7,7 @@ The Windows wizard now follows the dashboard's visual language:
 - Fixed main actions, slimmer scrolling, aligned tabs and a calmer progress view.
 - Native dark title bar on supported Windows, with a matching EXE icon.
 - Refreshed Russian/English setup screenshots and GUI regression coverage.
-- Faster card repaints: local DEMO first layout measured 0.09s instead of 2.73s after removing tiny repeated texture tiles. This is not a promise about cold EXE extraction time.
+- Faster card repaints: local DEMO first layout measured 0.07s instead of 2.73s after removing tiny repeated texture tiles. Large centres and native solid fills keep idle/focus repaints cheap at HiDPI. This is not a promise about cold EXE extraction time.
 
 Windows-мастер теперь оформлен как дашборд: скруглённые карточки, фирменные оттенки и значок, аккуратные поля, фиксированные кнопки и более понятные шаги. Способ входа показывает только нужные поля, а переключение языка и режима не теряет введённые значения. Обе инструкции обновлены свежими снимками DEMO.
 

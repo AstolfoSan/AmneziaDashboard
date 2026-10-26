@@ -16,22 +16,32 @@ def rounded_image(master, fill, border, radius=9):
     """Small antialiased nine-slice, stretched by ttk without extra packages."""
     # Tk tiles the middle of an image element. A 3x3 centre made large cards
     # require tens of thousands of blits on every repaint, especially at HiDPI.
-    # A 64x64 centre keeps the same corners with a fraction of the draw calls.
-    size = radius * 2 + 66
+    # A 256x256 centre also keeps idle/focus repaints cheap at Windows HiDPI.
+    # Fill straight regions in Tcl; calculate only the small corner pixels.
+    size = radius * 2 + 258
     image = tk.PhotoImage(master=master, width=size, height=size)
     def rgb(value):return tuple(int(value[i:i+2], 16) for i in (1, 3, 5))
     surface = rgb(COLORS['bg']); edge = rgb(border); inside = rgb(fill)
-    for y in range(size):
+    def hex_color(values):return '#%02x%02x%02x' % tuple(values)
+    image.put(fill,to=(0,0,size,size))
+    for inset,color in [(0,hex_color([round((surface[n]+edge[n])/2) for n in range(3)])),
+                         (1,hex_color([round((inside[n]+edge[n])/2) for n in range(3)]))]:
+        image.put(color,to=(inset,inset,size-inset,inset+1))
+        image.put(color,to=(inset,size-inset-1,size-inset,size-inset))
+        image.put(color,to=(inset,inset,inset+1,size-inset))
+        image.put(color,to=(size-inset-1,inset,size-inset,size-inset))
+    for y in range(radius+1):
         row = []
-        for x in range(size):
-            dx = max(radius-x, 0, x-(size-1-radius))
-            dy = max(radius-y, 0, y-(size-1-radius))
+        for x in range(radius+1):
+            dx = radius-x;dy = radius-y
             distance = math.hypot(dx, dy)
             outer = max(0., min(1., radius + .5-distance))
             inner = max(0., min(1., radius - .5-distance))
             color = tuple(round(surface[n]*(1-outer)+edge[n]*(outer-inner)+inside[n]*inner) for n in range(3))
             row.append('#%02x%02x%02x' % color)
-        image.put('{'+' '.join(row)+'}', to=(0, y))
+        for yy in (y,size-1-y):
+            image.put('{'+' '.join(row)+'}', to=(0,yy))
+            image.put('{'+' '.join(reversed(row))+'}', to=(size-radius-1,yy))
     return image
 
 

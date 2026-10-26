@@ -95,7 +95,7 @@ class GuiTests(unittest.TestCase):
         image=self.app.root.dashboard_images[0]
         center=image.width()//2
         self.assertEqual(image.get(center,center),(31,31,31))
-        self.assertGreaterEqual(image.width()-2*15,64)
+        self.assertGreaterEqual(image.width()-2*15,256)
         self.assertLess(self.app.start_button.winfo_reqheight(),70)
 
 
