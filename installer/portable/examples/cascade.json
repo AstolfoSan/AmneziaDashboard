@@ -1,0 +1,15 @@
+{
+  "mode": "cascade",
+  "public_origin": "https://dashboard.example.com:10443",
+  "panel_bind_ip": "0.0.0.0",
+  "publish_http_challenge": false,
+  "panel_network_cidr": "172.30.240.0/28",
+  "route_label": "Входной VPS → Зарубежный VPS",
+  "route_path": "Ваше устройство → Входной VPS → Зарубежный VPS → Интернет",
+  "agent": {"same_host": false, "ssh_host": "203.0.113.10", "ssh_port": 22, "ssh_user": "root", "source_cidr": "203.0.113.20/32"},
+  "vpn": {"public_host": "203.0.113.10", "container": "amnezia-awg2", "interface": "awg0", "config_path": "/opt/amnezia/awg/awg0.conf", "clients_table": "/opt/amnezia/awg/clientsTable", "protocol_version": "3.1", "mtu": 1280},
+  "images": {
+    "python": "python@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70",
+    "nginx": "nginx@sha256:47928bf67eb62a1863cb08d9ecb52d3e704304ba614eaee17884204677702951"
+  }
+}
