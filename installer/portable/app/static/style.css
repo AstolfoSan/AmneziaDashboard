@@ -32,3 +32,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .client-choice>.help{grid-column:1/-1;margin:0}.app-download .app-recommended{color:var(--accent)}
 .awg-import-guide{margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--blue-soft)}
 @media(max-width:560px){.client-choice{grid-template-columns:1fr;padding:12px}.client-choice label{padding:12px}}
+:root .profile-qr{margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:16px;text-align:center}
+.profile-qr h3{margin:0 0 14px}
+.qr-image{width:min(100%,480px);margin:0 auto}
+.qr-image svg{display:block;width:100%;height:auto;background:#ffffff;border-radius:0}
+#show-qr{margin-top:12px}

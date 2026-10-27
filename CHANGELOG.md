@@ -9,6 +9,14 @@ All user-visible changes are recorded here. Versions follow Semantic Versioning.
 - Clean-VPS direct/cascade acceptance and real-device validation.
 - Reviewed in-place upgrade/migration tooling; the installer remains fresh-only.
 
+## [1.3.1] — 2026-10-27
+
+### Added / Добавлено
+
+- Local-only QR codes after profile issuance, using the exact existing vpn:// key or AmneziaWG .conf selected by the visitor. No new peer, network relay, CDN, QR API or persisted QR image.
+- Explicit show/hide, clearing on app change/close/pagehide, stale-response guards, private-key warning and an honest file fallback when one QR cannot contain the complete profile.
+- Russian/English QR instructions and independent ZXing byte-for-byte decoding checks, including dense AWG 3.1 and maximum-capacity payloads. Physical camera/app import acceptance remains pending.
+
 ## [1.3.0] — 2026-10-27
 
 ### Added / Добавлено

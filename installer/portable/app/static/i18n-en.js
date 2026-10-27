@@ -1,5 +1,13 @@
 'use strict';
 globalThis.DashboardEnglish={
+ 'Показать QR-код':'Show QR code',
+ 'Скрыть QR-код':'Hide QR code',
+ 'QR-код для ':'QR code for ',
+ 'Готовим QR-код…':'Preparing QR code…',
+ 'Конфиг слишком большой для одного QR-кода. Скачайте файл или скопируйте ключ.':'The profile is too large for one QR code. Download the file or copy the key.',
+ 'Не удалось создать QR-код. Скачайте файл или попробуйте ещё раз.':'Could not create the QR code. Download the file or try again.',
+ 'Откройте сканер QR-кода внутри выбранного приложения на другом устройстве и наведите камеру на этот код.':'Open the QR scanner inside the selected app on another device and point the camera at this code.',
+ 'QR-код содержит ваш приватный ключ. Не публикуйте его и не пересылайте другим людям.':'The QR code contains your private key. Do not publish it or share it with other people.',
  'Для ручного добавления сначала нажмите «Скопировать ключ» на этой странице.':'For manual import, first press Copy key on this page.',
  'Последняя стабильная версия AmneziaVPN: ':'Latest stable AmneziaVPN version: ',
  'Кнопки AmneziaVPN выбирают последнюю стабильную версию.':'AmneziaVPN buttons select the latest stable version.',

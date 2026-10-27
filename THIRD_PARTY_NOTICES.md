@@ -19,6 +19,12 @@ owners. The dashboard monogram is original project artwork.
   individual licenses. Optional frozen Windows builds must carry dependency
   license texts collected from the build environment.
 - Docker base images, Python and nginx retain their upstream licenses.
+- QR encoding uses the local, unmodified Project Nayuki QR Code generator 1.8.0
+  (MIT), ES6 release asset `qrcodegen-v1.8.0-es6.js`. Its full license is retained
+  in `installer/portable/app/static/qrcodegen.js`. Upstream:
+  https://github.com/nayuki/QR-Code-generator/releases/tag/v1.8.0 . SHA-256:
+  `6a1116192ed1dd67fa1bf31e77f5817103d71c23bbac24c382e698b7668bdd01`.
+  No external QR service, CDN or telemetry is used.
 - Windows EXE includes Python, Tcl/Tk, Paramiko and crypto dependencies. The
   release carries Windows-licenses.zip and embeds the same collected notices.
   Reviewed Tcl/Tk terms are retained in docs/licenses from the official

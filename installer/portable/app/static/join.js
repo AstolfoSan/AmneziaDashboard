@@ -1,9 +1,9 @@
 'use strict';
 var tr=value=>globalThis.DashboardI18n?globalThis.DashboardI18n.text(value):value;
 const $=s=>document.querySelector(s), token=location.pathname.startsWith('/j/')?location.pathname.slice(3):'';
-let device,profileRequest=null,confRequest=null,preparedImport=null,preparedAwg=null,selectedClient='vpn';
+let device,profileRequest=null,confRequest=null,preparedImport=null,preparedAwg=null,selectedClient='vpn',qrOpen=false,qrEpoch=0;
 globalThis.DeviceDownloads?.mount(document,navigator);
-globalThis.ClientChoice?.mount(document,navigator,value=>{selectedClient=value;if(device?.ready)prepareImport();});
+globalThis.ClientChoice?.mount(document,navigator,value=>{selectedClient=value;if(device?.ready){prepareImport();if(qrOpen)showQr();}});
 fetch('/api/downloads').then(async r=>{if(!r.ok)return;const release=await r.json();$('#release-version').textContent=tr('Последняя стабильная версия AmneziaVPN: ')+release.version+' · GitHub';for(const [platform,asset] of Object.entries(release.platforms)){const hint=document.querySelector('[data-download-hint="'+platform+'"]');if(hint)hint.textContent=tr(asset.hint)}}).catch(()=>{});
 function error(s){$('#join-error').textContent=s}
 function ready(){$('#request-view').classList.add('hidden');$('#ready-view').classList.remove('hidden');$('#issued-expiry').textContent=device&&Object.hasOwn(device,'expires_at')?(device.expires_at==null?tr('При выдаче: без ограничения срока.'):tr('При выдаче доступ до ')+ClientAccess.format(device.expires_at)):'';error('');prepareImport()}
@@ -43,5 +43,24 @@ $('#import-app').onclick=()=>launchImport(false);
 $('#import-awg').onclick=()=>launchImport(true);
 $('#download').onclick=async()=>{try{saveProfile(await profile())}catch(e){error(e.message)}};
 $('#download-conf').onclick=async()=>{try{saveProfile(await profile('conf'),'conf')}catch(e){error(e.message)}};
+function hideQr(){
+  qrEpoch++;qrOpen=false;$('#profile-qr').hidden=true;$('#qr-image').replaceChildren();
+  $('#qr-status').textContent='';$('#show-qr').textContent=tr('Показать QR-код');$('#show-qr').setAttribute('aria-expanded','false');
+}
+async function showQr(){
+  if(!device?.ready)return;
+  qrOpen=true;const epoch=++qrEpoch,format=selectedClient==='awg'?'conf':'vpn',app=format==='conf'?'AmneziaWG':'AmneziaVPN';
+  $('#profile-qr').hidden=false;$('#qr-image').replaceChildren();$('#qr-app').textContent=tr('QR-код для ')+app;
+  $('#show-qr').textContent=tr('Скрыть QR-код');$('#show-qr').setAttribute('aria-expanded','true');$('#qr-status').textContent=tr('Готовим QR-код…');
+  try{
+    const text=await profile(format);if(epoch!==qrEpoch||!qrOpen)return;
+    ProfileQR.render($('#qr-image'),text,format,tr('QR-код для ')+app);$('#qr-status').textContent='';
+  }catch(e){
+    if(epoch!==qrEpoch||!qrOpen)return;
+    $('#qr-image').replaceChildren();$('#qr-status').textContent=tr(e.message==='QR_TOO_LARGE'?'Конфиг слишком большой для одного QR-кода. Скачайте файл или скопируйте ключ.':'Не удалось создать QR-код. Скачайте файл или попробуйте ещё раз.');
+  }
+}
+$('#show-qr').onclick=()=>qrOpen?hideQr():showQr();
+globalThis.addEventListener?.('pagehide',hideQr);
 $('#copy').onclick=async()=>{try{await navigator.clipboard.writeText(await profile());$('#toast').textContent=tr('Ключ скопирован. Вставьте его в AmneziaVPN через «+».');$('#toast').classList.remove('hidden');setTimeout(()=>$('#toast').classList.add('hidden'),6000)}catch(e){error(tr('Не удалось скопировать ключ. Попробуйте скачать файл .vpn.'))}};
 (async()=>{if(!token){$('#join-description').textContent=tr('Попросите администратора прислать приглашение вашей группы. В нём будет кнопка получения персонального конфига.');return}try{let d=await request('/api/join/'+encodeURIComponent(token));$('#join-title').textContent=d.name;$('#join-description').textContent=tr('Вы получили приглашение в эту группу. Введите название устройства и нажмите кнопку ниже. ')+ClientAccess.groupText(d.default_access_days);$('#join-form').classList.remove('hidden');try{device=JSON.parse(sessionStorage.getItem('join:'+token)||'null')}catch{}if(device?.ready&&Date.now()-device.at<86400000)ready();else if(device?.ready){device=null;sessionStorage.removeItem('join:'+token)}}catch(e){$('#join-description').textContent=e.message}})();

@@ -1,4 +1,4 @@
-# Installing AmneziaDashboard 1.3.0
+# Installing AmneziaDashboard 1.3.1
 
 [Русский](INSTALL_RU.md) · [Home](../README.md) · [Releases](https://github.com/AstolfoSan/AmneziaDashboard/releases)
 
@@ -166,6 +166,25 @@ On iPhone/iPad, step one offers **AmneziaVPN (recommended)** or **AmneziaWG**. A
 Administrators get a **.conf** button next to **.vpn**. Both formats use the same device identity, address, keys, endpoint, MTU, AWG 3.1 parameters, expiry, manual pause and traffic quota. DNS placeholders in the native export become concrete DNS addresses for standalone import. Export never creates a peer or restores revoked access. Protected legacy profiles without a stored guest export remain non-downloadable.
 
 Do not enable both apps at once or reuse the profile on another device. A `.conf` contains its private client key: treat it like a password. This is **not** a standard WireGuard profile. Changing the app does not fix provider/network path problems. Native sharing depends on the actual device and browser; physical iOS/Android acceptance is not claimed.
+
+### Connect by QR code
+
+1. Receive your profile and select the app in step one.
+2. Press **Show QR code** below the ready profile. AmneziaVPN uses the original
+   `vpn://` key; AmneziaWG uses the exact contents of your `.conf`.
+3. Open the QR scanner **inside the selected app** on your phone and point the
+   camera at the code on another screen. Confirm import and connection.
+4. Press **Hide QR code** afterwards. Do not publish or share its screenshot:
+   the QR contains your private client key. One profile is for one device.
+
+![AmneziaWG QR — synthetic data only, not a working connection](images/join-qr-en.png)
+
+Encoding runs locally in the browser, without a CDN, external QR API or stored
+server-side image. App changes replace the code; closing removes it from the page.
+Oversized profiles fall back to the complete file/key, never truncation or a new
+peer. Access rules and counters stay unchanged. On the same phone, use file
+sharing/import instead. Independent decoding is checked; physical camera/app
+import on iOS/Android still needs acceptance testing.
 
 ## 9. Backups, recovery and troubleshooting
 
