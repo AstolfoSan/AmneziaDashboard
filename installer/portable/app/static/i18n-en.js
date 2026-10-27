@@ -1,5 +1,10 @@
 'use strict';
 globalThis.DashboardEnglish={
+ 'QR-код · ':'QR code · ',
+ 'Приложение для QR-кода':'QR code app',
+ 'Это уже выданный профиль. Срок, пауза, лимит трафика и ключи не изменяются.':'This is an existing profile. Expiry, pause, traffic quota and keys stay unchanged.',
+ 'Конфиг слишком большой для одного QR-кода. Скачайте .vpn или .conf в строке клиента.':'The profile is too large for one QR code. Download .vpn or .conf from the client row.',
+ 'Не удалось получить QR-код. Проверьте доступ к клиенту и попробуйте ещё раз.':'Could not load the QR code. Check access to the client and try again.',
  'Показать QR-код':'Show QR code',
  'Скрыть QR-код':'Hide QR code',
  'QR-код для ':'QR code for ',

@@ -4,7 +4,7 @@
   <p>A clear home for your self-hosted VPN.</p>
   <p><strong>Profiles · People · Traffic · Access</strong></p>
   <p><a href="README_RU.md">Русский</a> · English · <a href="docs/INSTALL_EN.md">Installation</a> · <a href="https://github.com/AstolfoSan/AmneziaDashboard/releases">Downloads</a></p>
-  <img alt="Version 1.3.1" src="https://img.shields.io/badge/version-1.3.1-F6A453">
+  <img alt="Version 1.3.2" src="https://img.shields.io/badge/version-1.3.2-F6A453">
   <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-9B8BC1">
   <img alt="Self hosted" src="https://img.shields.io/badge/self--hosted-AmneziaWG-7EBAD2">
 </div>
@@ -17,7 +17,7 @@ devices by administrator and group, and understand usage without editing configs
 by hand. It is not an official Amnezia product or a VPN subscription service.
 
 > [!IMPORTANT]
-> **1.3.1 identifies this source/package release, not completed fresh-VPS acceptance.**
+> **1.3.2 identifies this source/package release, not completed fresh-VPS acceptance.**
 > The dashboard has automated regression tests. The new direct/cascade installer
 > still needs end-to-end acceptance on clean Ubuntu VPSs and real client devices.
 > Do not run it over an existing production VPN. See [validation](VALIDATION.json).
@@ -26,6 +26,7 @@ by hand. It is not an official Amnezia product or a VPN subscription service.
 
 - One guest identity: `.vpn` for AmneziaVPN or `.conf` for AmneziaWG, with the same access policy.
 - QR codes after issuance, generated locally for the selected app without external services.
+- QR action for existing clients: select AmneziaVPN/AmneziaWG without issuing another profile.
 - iPhone/iPad: explicit app choice and an official Russian App Store AmneziaWG option. Other OS alternatives remain collapsed.
 - Device-aware app downloads: Android, iPhone/iPad, Windows, macOS and Linux; other systems stay collapsed.
 - Super-administrator → administrator → group → device hierarchy.

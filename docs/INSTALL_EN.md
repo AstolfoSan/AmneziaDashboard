@@ -1,4 +1,4 @@
-# Installing AmneziaDashboard 1.3.1
+# Installing AmneziaDashboard 1.3.2
 
 [Русский](INSTALL_RU.md) · [Home](../README.md) · [Releases](https://github.com/AstolfoSan/AmneziaDashboard/releases)
 
@@ -185,6 +185,24 @@ Oversized profiles fall back to the complete file/key, never truncation or a new
 peer. Access rules and counters stay unchanged. On the same phone, use file
 sharing/import instead. Independent decoding is checked; physical camera/app
 import on iOS/Android still needs acceptance testing.
+
+### QR for an existing client from the dashboard
+
+1. Open **Devices** and find the client in its group.
+2. Press **QR** beside **.vpn** and **.conf**.
+3. Select **AmneziaVPN (.vpn)** or **AmneziaWG (.conf)** in the dialog. This
+   displays the original key or complete configuration, not a new profile.
+4. Scan using the selected app's scanner on another device.
+5. Press **Close** or Escape. The SVG is cleared and unfinished requests are
+   aborted; neither images nor configuration payloads are persisted in browser storage.
+
+![Existing-client QR — synthetic data only](images/clients-qr-en.png)
+
+Administrators see only clients in their scope; the backend checks each export.
+QR cannot lift a pause, expired deadline or exhausted traffic quota, and never
+resets counters or keys. Protected legacy clients without a stored guest export,
+incomplete and revoked profiles have no QR action. Oversized profiles keep the
+file download option in the client row.
 
 ## 9. Backups, recovery and troubleshooting
 

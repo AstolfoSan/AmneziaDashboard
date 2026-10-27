@@ -9,6 +9,14 @@ All user-visible changes are recorded here. Versions follow Semantic Versioning.
 - Clean-VPS direct/cascade acceptance and real-device validation.
 - Reviewed in-place upgrade/migration tooling; the installer remains fresh-only.
 
+## [1.3.2] — 2026-10-27
+
+### Added / Добавлено
+
+- QR action in the administrator client table for already issued profiles, with AmneziaVPN / AmneziaWG selection and the same scoped, authenticated export endpoints.
+- Read-only QR dialog with bounded requests, per-dialog memory-only format caching, clearing/abort on close or pagehide and protection from stale responses. No new peer, identity, quota, deadline or lifetime-counter changes.
+- Legacy/pending/revoked/error clients stay protected; QR does not bypass pause, expiry or traffic quota. RU/EN documentation and synthetic screenshots included.
+
 ## [1.3.1] — 2026-10-27
 
 ### Added / Добавлено

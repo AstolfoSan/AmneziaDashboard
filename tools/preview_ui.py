@@ -46,6 +46,9 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/audit':return self.send({'events':[{'at':int(time.time()),'username':'owner','event':'group.created','detail':'DEMO'}]})
         if path=='/api/downloads':return self.send({'version':'5.0.3.0','platforms':{}})
         if path=='/api/join/demo':return self.send({'name':'Family','default_access_days':30})
+        if path in {'/api/devices/demo-device-'+str(i)+'/download' for i in range(3)} and DEMO_READY:
+            value='[Interface]\nPrivateKey = '+('A'*43)+'=\nAddress = 10.8.1.13/32\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = '+('B'*43)+'=\nEndpoint = 203.0.113.10:39265\nAllowedIPs = 0.0.0.0/0\n'
+            return self.send((value if 'format=conf' in self.path else 'vpn://DEMO_PROFILE_NOT_FOR_CONNECTION').encode(),'application/octet-stream')
         if path=='/api/receive/demo-device-0' and DEMO_READY:
             if self.headers.get('Authorization')!='Bearer DEMO_NOT_A_CREDENTIAL':return self.send_error(404)
             value='[Interface]\nPrivateKey = '+('A'*43)+'=\nAddress = 10.8.1.13/32\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = '+('B'*43)+'=\nEndpoint = 203.0.113.10:39265\nAllowedIPs = 0.0.0.0/0\n'

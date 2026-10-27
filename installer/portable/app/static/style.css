@@ -37,3 +37,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .qr-image{width:min(100%,480px);margin:0 auto}
 .qr-image svg{display:block;width:100%;height:auto;background:#ffffff;border-radius:0}
 #show-qr{margin-top:12px}
+dialog.qr-modal{width:min(640px,94vw)}
+.qr-modal .qr-image{width:min(100%,360px,32vh);margin:10px auto}
+.qr-modal .actions{margin-top:16px}
