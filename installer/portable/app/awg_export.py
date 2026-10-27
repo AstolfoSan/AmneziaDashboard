@@ -149,4 +149,3 @@ def conf_from_vpn(vpn):
     return '\n\n'.join('[' + section + ']\n' + '\n'.join(
         key + ' = ' + value for key, value in values.items()
     ) for section, values in sections.items()) + '\n'
-
