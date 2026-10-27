@@ -3,6 +3,8 @@ import re
 from flask import has_request_context,request
 
 MESSAGES={
+ 'Неподдерживаемый формат профиля':'Unsupported profile format',
+ 'Не удалось подготовить конфиг AmneziaWG. Исходный профиль не изменён':'Could not prepare the AmneziaWG profile. The original profile is unchanged',
  'GitHub временно недоступен. Попробуйте скачать приложение позже':'GitHub is temporarily unavailable. Try downloading the app later',
  'VPN-сервер не подтвердил изменение доступа. Обновите список и повторите при необходимости':'The VPN server did not confirm access changes. Refresh and retry if needed',
  'VPN-сервер не подтвердил лимит трафика. Настройка в панели не сохранена.':'The VPN server did not confirm the traffic quota. The dashboard setting was not saved.',

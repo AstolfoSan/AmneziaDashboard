@@ -1,4 +1,4 @@
-# Installing AmneziaDashboard 1.2.0
+# Installing AmneziaDashboard 1.3.0
 
 [Русский](INSTALL_RU.md) · [Home](../README.md) · [Releases](https://github.com/AstolfoSan/AmneziaDashboard/releases)
 
@@ -119,7 +119,7 @@ If preflight finds an existing VPN or occupied port, **do not delete its files o
 3. Enter a name, select the administrator, device limit and default access duration. Blank means unlimited; this default applies only to newly issued profiles.
 4. Click **Copy invitation** and send it to the intended person. Invitations are currently reusable: any holder can issue profiles within the group limit.
 5. Alternatively, open **Devices → + Create .vpn**, choose the group and name the device.
-6. Its row offers **.vpn**, **Copy link**, **Pause access**, **Expiry** and **Traffic**.
+6. Its row offers **.vpn**, **.conf**, **Copy link**, **Pause access**, **Expiry** and **Traffic**.
 
 ![Administrator, group and device hierarchy](images/devices-en.png)
 
@@ -150,6 +150,22 @@ For unlimited duration: **Expiry → ∞ No expiry → Save expiry**. Remove man
 ![AmneziaVPN key field](../installer/portable/app/static/amnezia-paste-key.png)
 
 The two cropped upstream images show the Russian AmneziaVPN UI; positions correspond to Plus and Paste. Native import depends on OS/browser support. Download and copy remain fallbacks. Do not share personal profiles.
+
+### AmneziaWG and .conf profiles
+
+On iPhone/iPad, step one offers **AmneziaVPN (recommended)** or **AmneziaWG**. AmneziaWG has an [official Russian App Store listing](https://apps.apple.com/ru/app/amneziawg/id6478942365). Use a version supporting AWG 3.1 (3.1.4 or later at release time). On Android, Windows, macOS and Linux, expand **AmneziaWG — additional option**; alternative installation links are also collapsed.
+
+![iPhone app choice — synthetic data only](images/join-ios-en.png)
+
+1. Choose and install your app in step one.
+2. Get the invitation profile as usual. Do not create a second device.
+3. For AmneziaVPN, use **Add to AmneziaVPN**, a `.vpn` file or the key.
+4. For AmneziaWG, use **Add to AmneziaWG** and select it in the system share sheet, when supported. Otherwise select **Download .conf for AmneziaWG**.
+5. Import the tunnel from that file in AmneziaWG. On iPhone, you can also use Files → Share → AmneziaWG. Confirm import and enable the tunnel.
+
+Administrators get a **.conf** button next to **.vpn**. Both formats use the same device identity, address, keys, endpoint, MTU, AWG 3.1 parameters, expiry, manual pause and traffic quota. DNS placeholders in the native export become concrete DNS addresses for standalone import. Export never creates a peer or restores revoked access. Protected legacy profiles without a stored guest export remain non-downloadable.
+
+Do not enable both apps at once or reuse the profile on another device. A `.conf` contains its private client key: treat it like a password. This is **not** a standard WireGuard profile. Changing the app does not fix provider/network path problems. Native sharing depends on the actual device and browser; physical iOS/Android acceptance is not claimed.
 
 ## 9. Backups, recovery and troubleshooting
 

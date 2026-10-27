@@ -1,21 +1,27 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "date_moscow": "2026-10-27",
   "status": "source_release_fresh_vps_acceptance_pending",
   "local_release_checks": "PASSED",
-  "tests": {"installer": 64, "panel_python": 108, "portable": 12, "javascript": 150, "release_privacy": 6},
+  "tests": {
+    "installer": 64,
+    "panel_python": 122,
+    "portable": 13,
+    "javascript": 155,
+    "release_privacy": 6
+  },
   "compose_parser_variants": 5,
   "compose_engine_or_vps_used": false,
-  "portable_manifest_files": 54,
+  "portable_manifest_files": 58,
   "os_detection_unit_cases": "PASSED_ANDROID_IOS_IPADOS_WINDOWS_MACOS_LINUX_UNKNOWN",
   "invitation_windows_browser_languages_and_manual_fallback": "PASSED_SYNTHETIC_PREVIEW",
-  "windows_x64_ci_build": "PASSED_1_2_0_GITHUB_WINDOWS_X64",
-  "windows_frozen_offline_self_test": "PASSED_1_2_0_WITHOUT_VPS_ACCESS",
+  "windows_x64_ci_build": "PENDING_1_3_0",
+  "windows_frozen_offline_self_test": "PENDING_1_3_0",
   "windows_gui_languages_modes_demo": "PASSED_NATIVE_CAPTURE_INTERACTION_AND_LOCAL_TK_TESTS",
   "windows_rendering_profile": "LOCAL_DEMO_PREPARED_FORM_NOT_COLD_EXE_LAUNCH",
   "windows_initial_map_and_atomic_replacement": "PASSED_LOCAL_TK_TESTS",
   "web_languages_and_invitation_synthetic_preview": "PASSED",
-  "documentation_screenshots_synthetic_only": 12,
+  "documentation_screenshots_synthetic_only": 14,
   "windows_exe_code_signed": false,
   "offline_installer_self_test": "PASSED_WITHOUT_VPS_ACCESS",
   "fresh_linux_vps_direct": "NOT_RUN",
@@ -24,5 +30,8 @@
   "reboot_restore_and_ca_renewal_acceptance": "NOT_RUN_FOR_INSTALLER",
   "production_server_changes_by_publication": false,
   "private_deployment_state_in_release": false,
-  "note": "Automated source tests are not proof of a fresh VPS installation. Use separately authorized clean test hosts. Do not install over an existing VPN."
+  "note": "Automated source tests are not proof of a fresh VPS installation. Use separately authorized clean test hosts. Do not install over an existing VPN.",
+  "amneziawg_conf_export": "PASSED_SYNTHETIC_TESTS_AND_EXISTING_GUEST_READ_ONLY_API_CHECK",
+  "amneziawg_ios_choice": "PASSED_RU_EN_MOBILE_BROWSER_PREVIEW",
+  "native_amneziawg_physical_device_import": "NOT_RUN"
 }

@@ -19,6 +19,7 @@ class DownloadTests(unittest.TestCase):
         html=(Path(__file__).parent/'static/join.html').read_text(encoding='utf-8')
         links=Links();links.feed(html)
         play=[a for a in links.links if a.get('href','').startswith('https://play.google.com/')]
+        play=[a for a in play if 'id=org.amnezia.vpn' in a.get('href','')]
         self.assertEqual(len(play),1)
         self.assertEqual(play[0]['href'],'https://play.google.com/store/apps/details?id=org.amnezia.vpn')
         self.assertEqual(play[0]['target'],'_blank')

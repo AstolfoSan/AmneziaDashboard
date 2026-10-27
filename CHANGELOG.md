@@ -9,6 +9,17 @@ All user-visible changes are recorded here. Versions follow Semantic Versioning.
 - Clean-VPS direct/cascade acceptance and real-device validation.
 - Reviewed in-place upgrade/migration tooling; the installer remains fresh-only.
 
+## [1.3.0] — 2026-10-27
+
+### Added / Добавлено
+
+- Standalone AmneziaWG .conf export from the same stored guest .vpn: no new peer, identity, endpoint, access-policy or lifetime-counter changes.
+- Explicit recommended AmneziaVPN / alternate AmneziaWG choice on iPhone/iPad, including the official Russian App Store listing. Alternatives stay collapsed on other operating systems.
+- Authorized administrator and invitation downloads reuse existing ownership, bearer and expiry checks. Revoked/legacy/pending clients remain protected; exports cannot lift pause, expiry or traffic quota.
+- Bounded decompression, guest-only field allowlists and hook rejection protect native conversion. Concrete DNS replaces native placeholders; AWG 3.1 and keepalive ranges are retained.
+- Capability-based .conf file sharing with manual download/import fallback; no invented app URL scheme or third-party profile relay. Russian/English instructions and synthetic iPhone screenshots are included.
+- Physical mobile imports and clean-VPS installer acceptance remain pending. This feature does not repair underlying network outages.
+
 ## [1.2.0] — 2026-10-27
 
 ### Improved / Улучшено

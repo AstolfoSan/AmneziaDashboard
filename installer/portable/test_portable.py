@@ -86,6 +86,23 @@ class PortableTests(unittest.TestCase):
         self.assertIn('2222',argv);self.assertIn('StrictHostKeyChecking=yes',argv)
         self.assertIn('UserKnownHostsFile=/run/secrets/agent_known_hosts',argv)
         self.assertNotIn('StrictHostKeyChecking=no',argv)
+    def test_direct_and_cascade_conf_reuse_the_same_guest_and_configured_endpoint(self):
+        import base64
+        from awg_export import conf_from_vpn
+        valid=base64.b64encode(bytes([7])*32).decode()
+        for host in ('203.0.113.99','203.0.113.10'):
+            with tempfile.TemporaryDirectory() as temp,patch.object(agent,'HOST',host),patch.dict(agent.SETTINGS,
+                 {'endpoint_port':55123,'mtu':1360,'dns1':'9.9.9.9','dns2':'1.0.0.1'}):
+                engine=Engine();engine.cfg=engine.cfg.replace('HeaderProtectionKey = HEADER','HeaderProtectionKey = '+valid)
+                engine.wg=lambda field:{valid:[]} if field=='public-key' else {}
+                worker=agent.Agent(Path(temp),engine);uid=str(uuid.uuid4());worker.create(uid,'Synthetic phone')
+                before=engine.cfg;records={p.name:p.read_bytes() for p in Path(temp).glob('*.enc')}
+                vpn=worker.export(uid)['vpn'];conf=conf_from_vpn(vpn)
+                self.assertIn('Endpoint = '+host+':55123',conf);self.assertIn('MTU = 1360',conf)
+                self.assertIn('DNS = 9.9.9.9, 1.0.0.1',conf)
+                self.assertEqual(worker.export(uid)['vpn'],vpn);self.assertEqual(engine.cfg,before)
+                self.assertEqual({p.name:p.read_bytes() for p in Path(temp).glob('*.enc')},records)
+
     def test_direct_vpn_export_uses_foreign_endpoint_port_dns_and_description(self):
         with tempfile.TemporaryDirectory() as temp,patch.object(agent,'HOST','203.0.113.99'),patch.dict(agent.SETTINGS,
              {'route_label':'Прямой зарубежный VPN','endpoint_port':55123,'mtu':1360,'dns1':'9.9.9.9','dns2':'1.0.0.1'}):

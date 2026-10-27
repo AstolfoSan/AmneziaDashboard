@@ -18,6 +18,7 @@ from cryptography.fernet import Fernet
 from flask import Flask, abort, g, jsonify, request, send_from_directory, make_response, has_request_context, redirect
 from werkzeug.middleware.proxy_fix import ProxyFix
 from downloads import ReleaseDownloads, DownloadUnavailable, PLATFORMS
+from awg_export import conf_from_vpn
 from api_i18n import error_text,current_language
 
 HASHER = PasswordHasher(time_cost=2, memory_cost=19456, parallelism=1)
@@ -179,6 +180,8 @@ def create_app(config=None, agent=None):
                 log(c,'device.created',uid)
             return {'id':uid,'name':name,'ip':result['ip'],'state':state,'expires_at':expires_at}
     def download(uid, public=False):
+        fmt=request.args.get('format','vpn')
+        if fmt not in {'vpn','conf'}:abort(400,'Неподдерживаемый формат профиля')
         with db() as c:
             if public:
                 row=c.execute('SELECT * FROM devices WHERE id=?',(uid,)).fetchone()
@@ -189,6 +192,12 @@ def create_app(config=None, agent=None):
             if row['legacy'] or row['state'] not in {'active','paused','expired','limited'}: abort(409,'Этот профиль нельзя скачать из панели')
         try: vpn=rpc({'action':'export','id':uid})['vpn']
         except Exception: abort(503,'Сервис выдачи временно недоступен')
+        if fmt=='conf':
+            try:content=conf_from_vpn(vpn)
+            except Exception:abort(503,'Не удалось подготовить конфиг AmneziaWG. Исходный профиль не изменён')
+            response=make_response(content);response.mimetype='application/octet-stream'
+            response.headers['Content-Disposition']='attachment; filename="AmneziaWG-'+uid[:8]+'.conf"'
+            return response
         response=make_response(vpn+'\n'); response.mimetype='application/octet-stream'
         response.headers['Content-Disposition']='attachment; filename="AmneziaVPN-'+uid[:8]+'.vpn"'
         return response

@@ -8,6 +8,9 @@ import time
 from urllib.parse import urlsplit
 
 STATIC=Path(__file__).resolve().parents[1]/'installer/portable/app/static'
+DEMO_DEVICE=None
+DEMO_READY=False
+DEMO_LANGUAGE='ru'
 
 
 def dashboard():
@@ -43,6 +46,10 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/audit':return self.send({'events':[{'at':int(time.time()),'username':'owner','event':'group.created','detail':'DEMO'}]})
         if path=='/api/downloads':return self.send({'version':'5.0.3.0','platforms':{}})
         if path=='/api/join/demo':return self.send({'name':'Family','default_access_days':30})
+        if path=='/api/receive/demo-device-0' and DEMO_READY:
+            if self.headers.get('Authorization')!='Bearer DEMO_NOT_A_CREDENTIAL':return self.send_error(404)
+            value='[Interface]\nPrivateKey = '+('A'*43)+'=\nAddress = 10.8.1.13/32\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = '+('B'*43)+'=\nEndpoint = 203.0.113.10:39265\nAllowedIPs = 0.0.0.0/0\n'
+            return self.send((value if 'format=conf' in self.path else 'vpn://DEMO_PROFILE_NOT_FOR_CONNECTION').encode(),'application/octet-stream')
         if path.startswith('/api/'):return self.send_error(404)
         file='admin.html' if path=='/admin' else 'join.html' if path in {'/','/j/demo'} else path.removeprefix('/static/') if path.startswith('/static/') else ''
         target=(STATIC/file).resolve()
@@ -50,7 +57,15 @@ class Handler(BaseHTTPRequestHandler):
         payload=target.read_bytes()
         if target.suffix in {'.js','.html'}:
             payload=payload.replace(b'__DASHBOARD_ROUTE_LABEL__',b'Direct VPN').replace(b'__DASHBOARD_ROUTE_PATH__',b'Device -> foreign VPS -> Internet')
-        if target.suffix=='.html':payload=payload.replace(b'<body>',b'<body><div style="text-align:center;padding:6px;color:#F6A453;background:#141414">DEMO &middot; SYNTHETIC DATA &middot; READ ONLY</div>')
+        if target.suffix=='.html':
+            setup='localStorage.setItem("dashboard-language",'+json.dumps(DEMO_LANGUAGE)+');'
+            if DEMO_DEVICE:
+                ua={'ios':'iPhone; CPU iPhone OS 18_0','android':'Linux; Android 14; Chrome/130','windows':'Windows NT 10.0','macos':'Macintosh','linux':'X11; Linux x86_64'}[DEMO_DEVICE]
+                setup+='Object.defineProperty(navigator,"userAgent",{value:'+json.dumps(ua)+'});'
+            if DEMO_READY:
+                device={'id':'demo-device-0','name':'Synthetic phone','download_token':'DEMO_NOT_A_CREDENTIAL','ready':True,'at':int(time.time()*1000),'expires_at':None}
+                setup+='sessionStorage.setItem("join:demo",JSON.stringify('+json.dumps(device)+'));'
+            payload=payload.replace(b'<body>',('<body><script>'+setup+'</script><div style="text-align:center;padding:6px;color:#F6A453;background:#141414">DEMO &middot; SYNTHETIC DATA &middot; READ ONLY</div>').encode())
         self.send(payload,mimetypes.guess_type(target.name)[0] or 'application/octet-stream')
     def do_POST(self):self.send_error(405,'Read-only documentation preview')
     do_PATCH=do_POST
@@ -58,6 +73,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=18910);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=18910)
+    parser.add_argument('--device',choices=['ios','android','windows','macos','linux']);parser.add_argument('--ready',action='store_true');parser.add_argument('--lang',choices=['ru','en'],default='ru');args=parser.parse_args()
+    DEMO_DEVICE=args.device;DEMO_READY=args.ready;DEMO_LANGUAGE=args.lang
     print('Synthetic preview: http://127.0.0.1:'+str(args.port)+'/admin',flush=True)
     ThreadingHTTPServer(('127.0.0.1',args.port),Handler).serve_forever()

@@ -35,5 +35,18 @@ var tr=value=>globalThis.DashboardI18n?globalThis.DashboardI18n.text(value):valu
     if(plan.mode==='share')return nav.share({files:[plan.file]}).then(()=>'shared');
     download();return Promise.resolve('downloaded');
   }
-  return {platform,key,prepare,launch};
+  function conf(text){
+    const value=String(text||'').trim();
+    if(value.length>65536||!value.startsWith('[Interface]\n')||!value.includes('\n[Peer]\n')||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value))throw Error('Некорректный формат конфига AmneziaWG');
+    return value+'\n';
+  }
+  function prepareConf(text,nav={},FileType=globalThis.File){
+    const value=conf(text),os=platform(nav),file=typeof FileType==='function'?new FileType([value],'AmneziaWG.conf',{type:'application/octet-stream'}):null;
+    let share=false;
+    try{share=Boolean(file&&typeof nav.share==='function'&&typeof nav.canShare==='function'&&nav.canShare({files:[file]}));}catch{}
+    return {os,file,mode:share?'share':'download',hint:share?
+      'Выберите AmneziaWG в системном меню и подтвердите импорт .conf. Затем включите туннель в приложении.':
+      'Скачайте .conf, откройте AmneziaWG и импортируйте этот файл. На iPhone можно открыть его через «Файлы» → «Поделиться» → AmneziaWG.'};
+  }
+  return {platform,key,prepare,launch,conf,prepareConf};
 });
