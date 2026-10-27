@@ -37,6 +37,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .qr-image{width:min(100%,480px);margin:0 auto}
 .qr-image svg{display:block;width:100%;height:auto;background:#ffffff;border-radius:0}
 #show-qr{margin-top:12px}
-dialog.qr-modal{width:min(640px,94vw)}
-.qr-modal .qr-image{width:min(100%,360px,32vh);margin:10px auto}
+dialog.qr-modal{width:min(860px,94vw)}
+.qr-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.qr-modal .qr-image{width:min(100%,360px);margin:10px auto}
+@media(max-width:600px){.qr-layout{grid-template-columns:minmax(0,1fr)}.qr-modal .qr-image{width:min(100%,340px)}}
 .qr-modal .actions{margin-top:16px}

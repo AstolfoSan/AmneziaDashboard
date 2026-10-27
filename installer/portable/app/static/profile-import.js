@@ -40,13 +40,20 @@ var tr=value=>globalThis.DashboardI18n?globalThis.DashboardI18n.text(value):valu
     if(value.length>65536||!value.startsWith('[Interface]\n')||!value.includes('\n[Peer]\n')||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value))throw Error('Некорректный формат конфига AmneziaWG');
     return value+'\n';
   }
-  function prepareConf(text,nav={},FileType=globalThis.File){
-    const value=conf(text),os=platform(nav),file=typeof FileType==='function'?new FileType([value],'AmneziaWG.conf',{type:'application/octet-stream'}):null;
+  function fileName(name){
+    let value=String(name||'').normalize('NFC').replace(/[<>:"/\\|?*\x00-\x1F\x7F\u202A-\u202E\u2066-\u2069]/g,'_').replace(/^[.\s]+|[.\s]+$/g,'');
+    value=Array.from(value).slice(0,64).join('').replace(/[.\s]+$/g,'');
+    if(!value)value='AmneziaWG';
+    if(/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i.test(value))value='AmneziaWG-'+value;
+    return value+'.conf';
+  }
+  function prepareConf(text,nav={},FileType=globalThis.File,name){
+    const value=conf(text),os=platform(nav),file=typeof FileType==='function'?new FileType([value],fileName(name),{type:'application/octet-stream'}):null;
     let share=false;
     try{share=Boolean(file&&typeof nav.share==='function'&&typeof nav.canShare==='function'&&nav.canShare({files:[file]}));}catch{}
     return {os,file,mode:share?'share':'download',hint:share?
       'Выберите AmneziaWG в системном меню и подтвердите импорт .conf. Затем включите туннель в приложении.':
       'Скачайте .conf, откройте AmneziaWG и импортируйте этот файл. На iPhone можно открыть его через «Файлы» → «Поделиться» → AmneziaWG.'};
   }
-  return {platform,key,prepare,launch,conf,prepareConf};
+  return {platform,key,prepare,launch,conf,prepareConf,fileName};
 });

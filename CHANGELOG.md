@@ -9,6 +9,15 @@ All user-visible changes are recorded here. Versions follow Semantic Versioning.
 - Clean-VPS direct/cascade acceptance and real-device validation.
 - Reviewed in-place upgrade/migration tooling; the installer remains fresh-only.
 
+## [1.3.3] — 2026-10-27
+
+### Fixed / Исправлено
+
+- AmneziaVPN QR now uses the scanner's native QDataStream/Base64URL envelope over the unchanged guest payload, instead of encoding a vpn:// paste link that could leave iPhone scanning at 0 of 0. File/key exports and credentials are unchanged.
+- AmneziaWG QR shows the client's suggested tunnel name with a Copy name action. Its iPhone scanner requires a user-entered name; no unsupported config name field is invented.
+- Download/share buttons name .conf files after the client, with safe Unicode filenames, so file import can select the correct tunnel name. Existing in-app tunnels are not renamed.
+- Larger desktop QR layout, updated RU/EN instructions, official parser references and synthetic browser screenshots. Tests now check application framing and JSON decompression in addition to QR decoding.
+
 ## [1.3.2] — 2026-10-27
 
 ### Added / Добавлено

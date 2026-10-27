@@ -4,7 +4,7 @@
   <p>Понятная панель для вашего собственного VPN.</p>
   <p><strong>Профили · Люди · Трафик · Доступ</strong></p>
   <p>Русский · <a href="README.md">English</a> · <a href="docs/INSTALL_RU.md">Установка</a> · <a href="https://github.com/AstolfoSan/AmneziaDashboard/releases">Скачать</a></p>
-  <img alt="Версия 1.3.2" src="https://img.shields.io/badge/version-1.3.2-F6A453">
+  <img alt="Версия 1.3.3" src="https://img.shields.io/badge/version-1.3.3-F6A453">
   <img alt="Лицензия MIT" src="https://img.shields.io/badge/license-MIT-9B8BC1">
   <img alt="Свой VPN" src="https://img.shields.io/badge/self--hosted-AmneziaWG-7EBAD2">
 </div>
@@ -18,7 +18,7 @@ AmneziaDashboard — независимая веб-панель для совм�
 Это не официальный продукт Amnezia и не сервис платных VPN-подписок.
 
 > [!IMPORTANT]
-> **1.3.2 — версия исходников и пакета, а не обещание завершённой проверки установщика.**
+> **1.3.3 — версия исходников и пакета, а не обещание завершённой проверки установщика.**
 > Для панели есть автоматические регрессионные тесты. Полный прогон нового
 > прямого/каскадного установщика на чистых VPS и реальных клиентах ещё необходим.
 > Не запускайте его поверх действующего VPN. Подробности — в [VALIDATION.json](VALIDATION.json).

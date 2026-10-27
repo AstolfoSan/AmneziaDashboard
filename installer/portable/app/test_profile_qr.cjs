@@ -2,7 +2,8 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
 const QR=require('./static/profile-qr.js'),Import=require('./static/profile-import.js');
 const vendor=fs.readFileSync(path.join(__dirname,'static/qrcodegen.js'),'utf8'),scope={};vm.runInNewContext(vendor,scope);
-const encoder=scope.qrcodegen,native='vpn://'+('AbC_def-0123456789'.repeat(20)),conf='[Interface]\nPrivateKey = '+('A'.repeat(43))+'=\nAddress = 10.8.1.13/32\n\n[Peer]\nPublicKey = '+('B'.repeat(43))+'=\nEndpoint = 203.0.113.10:39265\nAllowedIPs = 0.0.0.0/0\n';
+const raw=Buffer.from(JSON.stringify({description:'Synthetic phone',containers:[]})),header=Buffer.alloc(4);header.writeUInt32BE(raw.length);
+const encoder=scope.qrcodegen,native='vpn://'+Buffer.concat([header,require('node:zlib').deflateSync(raw)]).toString('base64url'),conf='[Interface]\nPrivateKey = '+('A'.repeat(43))+'=\nAddress = 10.8.1.13/32\n\n[Peer]\nPublicKey = '+('B'.repeat(43))+'=\nEndpoint = 203.0.113.10:39265\nAllowedIPs = 0.0.0.0/0\n';
 test('the local encoder is the exact MIT upstream asset, without networking or storage',()=>{
   assert.equal(crypto.createHash('sha256').update(vendor).digest('hex'),'6a1116192ed1dd67fa1bf31e77f5817103d71c23bbac24c382e698b7668bdd01');
   assert.ok(vendor.includes('Copyright (c) Project Nayuki. (MIT License)'));
@@ -17,8 +18,8 @@ test('both native and conf generate deterministic square QR matrices',()=>{
   }
 });
 test('medium byte capacity is bounded, never truncated, split or replaced with an invitation',()=>{
-  const full='vpn://'+('a'.repeat(2325));assert.equal(QR.encode(full,'vpn',encoder).size,177);
-  for(const value of [full+'a',conf+'# '+('я'.repeat(1200))])assert.throws(()=>QR.encode(value,value.startsWith('vpn:')?'vpn':'conf',encoder),/QR_TOO_LARGE/);
+  const full=conf+'#'+('a'.repeat(2330-Buffer.byteLength(conf)));assert.equal(QR.encode(full,'conf',encoder).size,177);
+  for(const value of [full+'a',conf+'# '+('я'.repeat(1200))])assert.throws(()=>QR.encode(value,'conf',encoder),/QR_TOO_LARGE/);
   for(const [value,format] of [['https://example.test/j/demo','vpn'],['vpn://a<svg>','vpn'],[native,'bad'],['<html>error</html>','conf'],[conf+'\0','conf'],[null,'vpn']])assert.throws(()=>QR.encode(value,format,encoder));
   assert.throws(()=>QR.encode(native,'vpn',{}),/QR_UNAVAILABLE/);
 });

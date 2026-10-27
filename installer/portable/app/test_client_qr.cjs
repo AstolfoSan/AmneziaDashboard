@@ -2,10 +2,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const Access=require('./static/client-access.js'),QR=require('./static/profile-qr.js');
 const vendor={};vm.runInNewContext(fs.readFileSync(__dirname+'/static/qrcodegen.js','utf8'),vendor);
-const native='vpn://'+('synthetic_123'.repeat(25)),conf='[Interface]\nPrivateKey = '+('A'.repeat(43))+'=\nAddress = 10.8.1.13/32\n\n[Peer]\nPublicKey = '+('B'.repeat(43))+'=\nEndpoint = 203.0.113.10:39265\n';
+const raw=Buffer.from(JSON.stringify({description:'Synthetic phone',containers:[]})),header=Buffer.alloc(4);header.writeUInt32BE(raw.length);
+const native='vpn://'+Buffer.concat([header,require('node:zlib').deflateSync(raw)]).toString('base64url'),conf='[Interface]\nPrivateKey = '+('A'.repeat(43))+'=\nAddress = 10.8.1.13/32\n\n[Peer]\nPublicKey = '+('B'.repeat(43))+'=\nEndpoint = 203.0.113.10:39265\n';
 const admin=fs.readFileSync(__dirname+'/static/admin.js','utf8').replace(/start\(\)\.catch\(\(\)=>\{\}\);\s*$/,'');
 function fixture(options={}){
-  const nodes=new Map(),events={},requests=[],renders=[],timers=new Set(),pageEvents={};let releaseConf;
+  const nodes=new Map(),events={},requests=[],renders=[],timers=new Set(),pageEvents={},copies=[];let releaseConf;
   function node(selector){if(!nodes.has(selector))nodes.set(selector,{textContent:'',innerHTML:'',value:'',open:false,children:[],
     classList:{add(){},remove(){},toggle(){}},showModal(){this.open=true},close(){this.open=false;events.close?.({target:{id:'modal'}})},
     replaceChildren(...items){this.children=items},remove(){nodes.delete(selector)}});return nodes.get(selector);}
@@ -13,7 +14,7 @@ function fixture(options={}){
     tx:500,rx:250,handshake:0,up_bps:0,down_bps:0,manual_paused:0,expires_at:1795000000,traffic_limit_bytes:4096,...options.device};
   const state={devices:[device],groups:[],chart_info:{window_end:1793030400}};
   const context=vm.createContext({document:{querySelector:node,querySelectorAll:()=>[],addEventListener:(type,fn)=>events[type]=fn},
-    ClientAccess:Access,AbortController,Date,encodeURIComponent,addEventListener:(type,fn)=>pageEvents[type]=fn,
+    ClientAccess:Access,AbortController,Date,encodeURIComponent,navigator:{clipboard:{writeText:async value=>copies.push(value)}},addEventListener:(type,fn)=>pageEvents[type]=fn,
     setTimeout:(fn,delay)=>{const t={fn,delay};timers.add(t);return t},clearTimeout:t=>timers.delete(t),
     ProfileQR:{render:(image,value,format,label)=>{QR.encode(value,format,vendor.qrcodegen);renders.push({value,format,label});image.replaceChildren('synthetic-qr-geometry')}},
     fetch:async(url,opts)=>{
@@ -25,7 +26,7 @@ function fixture(options={}){
   vm.runInContext(fs.readFileSync(__dirname+'/static/client-qr.js','utf8'),context);vm.runInContext(admin,context);
   context.state=state;context.role=options.role||'super';vm.runInContext('me={role};data=state',context);
   const button={id:'',dataset:{qr:device.id},disabled:false};
-  return {context,node,nodes,device,state,button,events,pageEvents,requests,renders,timers,
+  return {context,node,nodes,device,state,button,events,pageEvents,requests,renders,timers,copies,
     click:()=>events.click({target:{closest:()=>button}}),table:()=>vm.runInContext('table(data.devices,true)',context),
     select:value=>{node('#client-qr-format').value=value;return node('#client-qr-format').onchange()},resolve:()=>releaseConf()};
 }
@@ -91,4 +92,10 @@ test('admin loads the local encoder and renderer before its controller, with no 
   for(const file of ['qrcodegen.js','profile-qr.js','client-qr.js'])assert.ok(html.indexOf('/static/'+file)<html.indexOf('/static/admin.js'));
   const source=fs.readFileSync(__dirname+'/static/client-qr.js','utf8');
   assert.doesNotMatch(source,/localStorage|sessionStorage|sendBeacon|https:\/\//);assert.ok(source.includes('credentials:\'same-origin\''));
+});
+test('WG displays and copies the exact client name without inventing a config Name field',async()=>{
+  const name='Телефон <iPhone>',f=fixture({device:{name}});await f.click();assert.equal(f.node('#client-qr-naming').hidden,true);
+  await f.select('conf');assert.equal(f.node('#client-qr-naming').hidden,false);assert.equal(f.node('#client-qr-name').textContent,name);
+  await f.node('#client-qr-copy-name').onclick();assert.deepEqual(f.copies,[name]);assert.equal(f.renders.at(-1).value,conf);
+  assert.ok(!f.node('#modal-body').innerHTML.includes(name));f.node('#modal').close();assert.equal(f.node('#client-qr-name').textContent,'');assert.equal(f.node('#client-qr-copy-name').onclick,null);
 });

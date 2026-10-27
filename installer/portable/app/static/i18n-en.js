@@ -1,6 +1,12 @@
 'use strict';
 globalThis.DashboardEnglish={
  'QR-код · ':'QR code · ',
+ 'Имя подключения':'Connection name',
+ 'Имя подключения: ':'Connection name: ',
+ 'Скопировать имя':'Copy name',
+ 'Имя скопировано':'Name copied',
+ 'Выделите и скопируйте имя':'Select and copy the name',
+ 'AmneziaWG на iPhone попросит ввести имя после сканирования. Вставьте это имя. При импорте .conf имя берётся из названия файла.':'AmneziaWG on iPhone asks for a name after scanning. Paste this name. File import uses the .conf filename.',
  'Приложение для QR-кода':'QR code app',
  'Это уже выданный профиль. Срок, пауза, лимит трафика и ключи не изменяются.':'This is an existing profile. Expiry, pause, traffic quota and keys stay unchanged.',
  'Конфиг слишком большой для одного QR-кода. Скачайте .vpn или .conf в строке клиента.':'The profile is too large for one QR code. Download .vpn or .conf from the client row.',

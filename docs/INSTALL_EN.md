@@ -1,4 +1,4 @@
-# Installing AmneziaDashboard 1.3.2
+# Installing AmneziaDashboard 1.3.3
 
 [Русский](INSTALL_RU.md) · [Home](../README.md) · [Releases](https://github.com/AstolfoSan/AmneziaDashboard/releases)
 
@@ -171,7 +171,7 @@ Do not enable both apps at once or reuse the profile on another device. A `.conf
 
 1. Receive your profile and select the app in step one.
 2. Press **Show QR code** below the ready profile. AmneziaVPN uses the original
-   `vpn://` key; AmneziaWG uses the exact contents of your `.conf`.
+   profile in the app scanner's QR format; AmneziaWG uses the exact `.conf` text.
 3. Open the QR scanner **inside the selected app** on your phone and point the
    camera at the code on another screen. Confirm import and connection.
 4. Press **Hide QR code** afterwards. Do not publish or share its screenshot:
@@ -196,7 +196,13 @@ import on iOS/Android still needs acceptance testing.
 5. Press **Close** or Escape. The SVG is cleared and unfinished requests are
    aborted; neither images nor configuration payloads are persisted in browser storage.
 
-![Existing-client QR — synthetic data only](images/clients-qr-en.png)
+![Existing-client QR — synthetic data only](images/qr-import-fix-en.png)
+
+**AmneziaWG names on iPhone:** after scanning, the app asks you to name the
+tunnel. Press **Copy name** in the panel and paste it into the app's prompt.
+Its QR scanner cannot set that name automatically. For automatic naming,
+download/share the `.conf`: the file is named after the client. Already imported
+tunnels are not renamed. See [QR format and official sources](QR_COMPATIBILITY.md).
 
 Administrators see only clients in their scope; the backend checks each export.
 QR cannot lift a pause, expired deadline or exhausted traffic quota, and never

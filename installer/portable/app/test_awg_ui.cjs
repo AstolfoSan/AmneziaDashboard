@@ -75,5 +75,5 @@ test('official Apple RU option is visible to iPhone and non-Apple alternatives a
   assert.ok(html.indexOf('client-choice.js')<html.indexOf('join.js'));assert.ok(html.includes('id="download-conf"'));
   const admin=fs.readFileSync(path.join(__dirname,'static/admin.js'),'utf8');
   assert.ok(admin.includes('data-download-conf='));assert.ok(admin.includes('/download?format=conf'));
-  assert.ok(admin.includes("format==='conf'?'AmneziaWG.conf'"));
+  assert.ok(admin.includes("format==='conf'?ProfileImport.fileName(name)"));
 });

@@ -1,16 +1,25 @@
 """Read-only synthetic UI for documentation. No SSH, credentials or profile issuing."""
 import argparse
+import base64
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 import json
 import mimetypes
 from pathlib import Path
 import time
+import zlib
 from urllib.parse import urlsplit
 
 STATIC=Path(__file__).resolve().parents[1]/'installer/portable/app/static'
 DEMO_DEVICE=None
 DEMO_READY=False
 DEMO_LANGUAGE='ru'
+
+
+def demo_native():
+    raw=json.dumps({'description':'DEMO synthetic phone','hostName':'203.0.113.10',
+                    'defaultContainer':'amnezia-awg','containers':[{'container':'amnezia-awg',
+                    'awg':{'last_config':json.dumps({'config':'[Interface]\nPrivateKey = SYNTHETIC_NOT_A_KEY\n\n[Peer]\nPublicKey = SYNTHETIC_NOT_A_KEY\n'})}}]},ensure_ascii=False).encode()
+    return 'vpn://'+base64.urlsafe_b64encode(len(raw).to_bytes(4,'big')+zlib.compress(raw)).decode().rstrip('=')
 
 
 def dashboard():
@@ -48,11 +57,11 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/join/demo':return self.send({'name':'Family','default_access_days':30})
         if path in {'/api/devices/demo-device-'+str(i)+'/download' for i in range(3)} and DEMO_READY:
             value='[Interface]\nPrivateKey = '+('A'*43)+'=\nAddress = 10.8.1.13/32\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = '+('B'*43)+'=\nEndpoint = 203.0.113.10:39265\nAllowedIPs = 0.0.0.0/0\n'
-            return self.send((value if 'format=conf' in self.path else 'vpn://DEMO_PROFILE_NOT_FOR_CONNECTION').encode(),'application/octet-stream')
+            return self.send((value if 'format=conf' in self.path else demo_native()).encode(),'application/octet-stream')
         if path=='/api/receive/demo-device-0' and DEMO_READY:
             if self.headers.get('Authorization')!='Bearer DEMO_NOT_A_CREDENTIAL':return self.send_error(404)
             value='[Interface]\nPrivateKey = '+('A'*43)+'=\nAddress = 10.8.1.13/32\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = '+('B'*43)+'=\nEndpoint = 203.0.113.10:39265\nAllowedIPs = 0.0.0.0/0\n'
-            return self.send((value if 'format=conf' in self.path else 'vpn://DEMO_PROFILE_NOT_FOR_CONNECTION').encode(),'application/octet-stream')
+            return self.send((value if 'format=conf' in self.path else demo_native()).encode(),'application/octet-stream')
         if path.startswith('/api/'):return self.send_error(404)
         file='admin.html' if path=='/admin' else 'join.html' if path in {'/','/j/demo'} else path.removeprefix('/static/') if path.startswith('/static/') else ''
         target=(STATIC/file).resolve()
